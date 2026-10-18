@@ -104,6 +104,7 @@ Based on skills by Philipp Lackner, changed a bit.
 
 | Skill | What it does |
 |-------|--------------|
+| `flow-stability` | Traces one flow end-to-end across a KMP client and its Spring Boot backend and reports where it can crash, race, get stuck on a loading state or drift out of sync. Findings table, no code edits. A project can add its own add-on skill with hop maps and known gaps. |
 | `kmp-crash-guard` | Hunts runtime crashes the compiler misses in KMP, Compose, Android and iOS code (duplicate lazy keys, `!!`, unsafe casts, platform-only crashes) and ranks them with fixes. |
 | `mobile-ux-conventions` | Mobile UX rules from Material 3, Apple HIG and WCAG: dialog button order, destructive actions, touch targets, forms, loading and empty states, color, typography, motion. |
 | `store-image-generator` | Captures emulator screens and builds App Store / Play Store screenshots with captions, store icons and the Play Store feature graphic. |
