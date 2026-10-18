@@ -1,0 +1,93 @@
+// Usage: node build_quiz.js questions.js quiz-template.html out.html
+// Validates the question bank, then injects it into the template at /*__QUESTIONS__*/.
+// Exits 1 with a list of problems if anything fails. Checks:
+//  - exactly 4 unique options, `c` = sorted array of 1–4 unique indices in 0..3
+//  - correct-count mix of the core set, calibrated on 45 real exam quiz questions
+//    (≈ 62 % one correct, 24 % two, 11 % three, 2 % all four): with ≥ 20 core questions
+//    at least 45 % have one correct, at most 25 % have three or four, and all four
+//    correct at most once per 30 questions; with ≥ 10, every count 1, 2, 3 occurs
+//  - length cue: among single-correct core questions, the correct option is the
+//    longest option in at most 40 % (chance ≈ 25 %)
+//  - stems: never "Welche EINE" / "genau eine" / "die einzige"; superlatives
+//    ("am besten", "am ehesten", "am deutlichsten", "hauptsächlich" …) with several
+//    correct options only in a slash-form stem that hides the count ("Welche Aussage/n
+//    beschreibt/en …"); without a slash form they need exactly one correct option;
+//    a singular stem ("Welcher …", "Welches …") must have exactly one correct option;
+//    a plain plural "Welche … sind/treffen/werden …" stem must have at least two
+//  - unique ids and questions
+//  - explanations never reference options by letter or by position ("die letzten beiden",
+//    "die erste Aussage") – options are shuffled at runtime;
+//    text inside „…“ quotes and "z. B." is ignored
+//  - no who/when/source questions ("Von wem stammt" …)
+//  - no in-class activities/exercises in stem or explanation ("Activity 3", "Mini-Aktivität" …)
+//  - optional `x: 1` marks an extended-mode question (same concept, new example); every topic
+//    with extended questions must also have core questions
+const fs = require('fs');
+const [, , qf, tf, out] = process.argv;
+const qs = fs.readFileSync(qf, 'utf8');
+eval(qs.replace('const QUESTIONS', 'globalThis.QUESTIONS'));
+const err = [];
+const seen = new Set(), ids = new Set();
+const strip = s => String(s).replace(/<[^>]+>/g, '');
+const LETTER = /(^|[\s(„"/])[A-D](?=[\s)\/,:;=–.]|$)/;
+const BAN = /von wem|wer hat|wer prägte|wer entwickelte|wer erfand|in welchem jahr|auf welcher folie|who (coined|defined|developed)/i;
+const POSITION = /\b(?:die |den |der )?(?:ersten|letzten|erste|letzte|zweite|dritte|vierte|obere|untere)\s+(?:beiden|zwei|drei|Option(?:en)?|Aussage(?:n)?|Antwort(?:en)?|Paar(?:e|en)?|Einwände|Regeln|Zuordnung(?:en)?|Formulierung(?:en)?|Zeile(?:n)?)\b/i;
+const SINGLE = /welche eine\b|die einzige|genau eine/i;
+const SUPERLATIVE = /am (besten|ehesten|deutlichsten|unmittelbarsten|wichtigsten|stärksten)|hauptsächlich/i;
+const SLASH = /\w\/(n|en|e|r|s|t)\b/;
+const SINGULAR = /^(Welcher|Welches)\s/;
+const PLURAL_VERB = /\b(sind|treffen|werden|gehören|beschreiben|passen|erklären|entsprechen|zählen)\b/;
+QUESTIONS.forEach((x, i) => {
+  const n = `#${i + 1} (id ${x.id})`;
+  if (!Array.isArray(x.o) || x.o.length !== 4) err.push(`${n}: needs exactly 4 options`);
+  else if (new Set(x.o).size !== 4) err.push(`${n}: duplicate options`);
+  const c = x.c;
+  if (!Array.isArray(c) || c.length < 1 || c.length > 4 || new Set(c).size !== c.length || c.some(v => !Number.isInteger(v) || v < 0 || v > 3))
+    err.push(`${n}: c must be an array of 1–4 unique indices 0..3`);
+  const key = x.q + (x.code || '');
+  if (seen.has(key)) err.push(`${n}: duplicate question`); seen.add(key);
+  if (x.id === undefined || ids.has(x.id)) err.push(`${n}: missing/duplicate id`); ids.add(x.id);
+  const e = strip(x.e || '').replace(/„[^“]*“/g, '').replace(/z\. ?B\./g, '');
+  if (LETTER.test(e)) err.push(`${n}: explanation references an option by letter: ${x.e.slice(0, 80)}`);
+  if (POSITION.test(e)) err.push(`${n}: explanation references options by position (erste/letzte …): ${e.match(POSITION)[0]}`);
+  if (BAN.test(x.q)) err.push(`${n}: who/when/source question`);
+  if (/aktivität|activity|übung|mini-akt/i.test(x.q + ' ' + x.e)) err.push(`${n}: mentions an in-class activity/exercise`);
+  const stem = strip(x.q).replace(/„[^“]*“/g, '');
+  if (SINGLE.test(stem)) err.push(`${n}: stem demands exactly one answer: ${x.q.slice(0, 80)}`);
+  if (SUPERLATIVE.test(stem) && !SLASH.test(stem) && Array.isArray(c) && c.length !== 1) err.push(`${n}: superlative stem without slash form reads as single-answer but has ${c.length} correct; use „Welche Aussage/n beschreibt/en … am besten?“: ${x.q.slice(0, 80)}`);
+  if (SINGULAR.test(stem) && !SLASH.test(stem) && Array.isArray(c) && c.length !== 1) err.push(`${n}: singular stem („Welcher/Welches …“) but ${c.length} correct options`);
+  if (/^Welche\s/.test(stem) && !SLASH.test(stem) && PLURAL_VERB.test(stem) && Array.isArray(c) && c.length < 2) err.push(`${n}: plural stem („Welche … sind/treffen …“) but only 1 correct option; use a slash or singular form`);
+  if (x.x !== undefined && x.x !== 1 && x.x !== true) err.push(`${n}: x must be 1/true or absent`);
+});
+const N = QUESTIONS.length;
+const core = QUESTIONS.filter(x => !x.x);
+const NC = core.length;
+const cnt = k => core.filter(x => Array.isArray(x.c) && x.c.length === k).length;
+const nC = [0, cnt(1), cnt(2), cnt(3), cnt(4)];
+const pct = v => Math.round(100 * v / NC);
+if (NC >= 10) [1, 2, 3].forEach(k => { if (!nC[k]) err.push(`core set has no question with ${k} correct option(s)`); });
+if (NC >= 20) {
+  if (nC[1] < 0.45 * NC) err.push(`too few single-answer questions in the core set (${nC[1]}/${NC} = ${pct(nC[1])} %); real exams ≈ 60 %, aim for 55 %`);
+  if (nC[3] + nC[4] > 0.25 * NC) err.push(`too many three/four-correct questions in the core set (${nC[3] + nC[4]}/${NC}); real exams ≈ 13 %`);
+}
+if (nC[4] > Math.ceil(NC / 30)) err.push(`all-four-correct used ${nC[4]}× in the core set; at most one per 30 questions`);
+const singles = core.filter(x => Array.isArray(x.c) && x.c.length === 1 && Array.isArray(x.o));
+const longestRight = singles.filter(x => {
+  const L = x.o.map(o => strip(o).length), mx = Math.max(...L);
+  return L[x.c[0]] === mx && L.filter(l => l === mx).length === 1;
+}).length;
+if (singles.length >= 10 && longestRight > 0.4 * singles.length)
+  err.push(`length cue: the correct option is the longest in ${longestRight}/${singles.length} single-answer questions; keep options parallel in length (≤ 40 %)`);
+const coreTopics = new Set(core.map(x => x.t));
+[...new Set(QUESTIONS.filter(x => x.x).map(x => x.t))].forEach(t => { if (!coreTopics.has(t)) err.push(`topic "${t}" has extended questions but no core questions`); });
+if (err.length) { console.error(err.join('\n')); process.exit(1); }
+const t = fs.readFileSync(tf, 'utf8');
+if (!t.includes('/*__QUESTIONS__*/')) { console.error('template has no /*__QUESTIONS__*/ marker'); process.exit(1); }
+fs.writeFileSync(out, t.replace('/*__QUESTIONS__*/', () => qs));
+const by = {}; QUESTIONS.forEach(x => by[x.t] = (by[x.t] || 0) + 1);
+const r = QUESTIONS.filter(x => x.y[0] === 'R').length, code = QUESTIONS.filter(x => x.y[0] === 'C').length;
+const nx = N - NC;
+console.log('OK', N, 'questions', nx ? `(core ${NC}, extended ${nx})` : '', JSON.stringify(by),
+  `| core correct per question: 1×${nC[1]} (${pct(nC[1])} %) 2×${nC[2]} 3×${nC[3]} 4×${nC[4]}`,
+  `| recall ${r} applied ${N - r - code} code/formula ${code}`,
+  `| longest option correct in ${longestRight}/${singles.length} single-answer questions`);
