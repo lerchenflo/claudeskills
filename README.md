@@ -54,7 +54,7 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 
 | Skill | What it does |
 |-------|--------------|
-| `claude-setup` | Sets up Claude Code on a device: global `CLAUDE.md`, status line (context, 5h and weekly limits), model, effort, plugins, skill sync with GitHub and Nextcloud, and the auto-update hook. Run it first on every new device. |
+| `claude-setup` | Sets up Claude Code on a device: global `CLAUDE.md`, status line (context, 5h and weekly limits), model, effort, plugins, skill sync with GitHub, and the auto-update hook. Run it first on every new device. |
 | `caveman` | Compressed reply style that cuts output tokens but keeps full technical accuracy. Levels lite, full, ultra and wenyan variants. |
 | `skill-creator` | Creates and improves skills, runs evals and benchmarks, and tunes skill descriptions so they trigger reliably. |
 

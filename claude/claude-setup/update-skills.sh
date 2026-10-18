@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Pulls the skills repo from GitHub and installs new or changed skills into ~/.claude/skills
-# (and the Nextcloud mirror, if this device has one). Meant to run as a SessionStart hook:
-# it checks GitHub at most once per CLAUDE_SKILLS_CHECK_INTERVAL seconds, and whatever it
+# Pulls the skills repo from GitHub and installs new or changed skills into ~/.claude/skills.
+# Meant to run as a SessionStart hook: it checks GitHub at most once per CLAUDE_SKILLS_CHECK_INTERVAL seconds, and whatever it
 # prints is added to Claude's context.
 #
 # Usage: update-skills.sh [--force] [repo-dir]
@@ -72,12 +71,7 @@ git -C "$REPO_DIR" archive HEAD | tar -x -C "$tmp/new"
 # CRLF vs LF does not count as a change (editors on Windows).
 same() { diff -rq --strip-trailing-cr -x __pycache__ -x .DS_Store "$1" "$2" >/dev/null 2>&1; }
 
-targets="$SKILLS_DIR"
-for nc in "$HOME"/Library/CloudStorage/Nextcloud-*/Schneaggchat/claude_skills "$HOME/Nextcloud/Schneaggchat/claude_skills"; do
-  [ -d "$nc" ] && targets="$targets
-$nc"
-done
-
+mkdir -p "$SKILLS_DIR"
 added="" updated="" conflicts=""
 for skill_md in "$tmp"/new/*/*/SKILL.md; do
   [ -f "$skill_md" ] || continue
@@ -88,22 +82,17 @@ for skill_md in "$tmp"/new/*/*/SKILL.md; do
   old_dir=$(ls -d "$tmp"/old/*/"$name" 2>/dev/null | head -n 1)
   [ -n "$old_dir" ] && same "$old_dir" "$new_dir" && continue # unchanged since last sync
 
-  while IFS= read -r root; do
-    mkdir -p "$root"
-    dst="$root/$name"
-    if [ ! -e "$dst" ]; then
-      cp -R "$new_dir" "$dst" && added="$added $name"
-    elif same "$dst" "$new_dir"; then
-      :
-    elif [ -n "$old_dir" ] && same "$dst" "$old_dir"; then
-      rm -rf "$dst" && cp -R "$new_dir" "$dst" && updated="$updated $name"
-    else
-      conflicts="$conflicts
+  dst="$SKILLS_DIR/$name"
+  if [ ! -e "$dst" ]; then
+    cp -R "$new_dir" "$dst" && added="$added $name"
+  elif same "$dst" "$new_dir"; then
+    :
+  elif [ -n "$old_dir" ] && same "$dst" "$old_dir"; then
+    rm -rf "$dst" && cp -R "$new_dir" "$dst" && updated="$updated $name"
+  else
+    conflicts="$conflicts
   - $dst (repo version: $REPO_DIR/$group/$name)"
-    fi
-  done <<EOF
-$targets
-EOF
+  fi
 done
 
 # Only remember this commit once everything is in place, so open conflicts are reported again next time.

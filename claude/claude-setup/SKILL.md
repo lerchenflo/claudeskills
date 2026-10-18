@@ -1,6 +1,6 @@
 ---
 name: claude-setup
-description: Set up Claude Code on this device with the user's personal preferences - writes the global ~/.claude/CLAUDE.md, installs the status line (context, 5h and weekly limits), sets model, effort and plugins, and syncs skills with the GitHub repo lerchenflo/claudeskills and Nextcloud, plus a SessionStart hook that pulls skill updates from GitHub. Use on the first launch on a new device, and whenever the user asks to set up, configure, update or restore their Claude preferences or skills on a machine.
+description: Set up Claude Code on this device with the user's personal preferences - writes the global ~/.claude/CLAUDE.md, installs the status line (context, 5h and weekly limits), sets model, effort and plugins, and syncs skills with the GitHub repo lerchenflo/claudeskills, plus a SessionStart hook that pulls skill updates from GitHub. Use on the first launch on a new device, and whenever the user asks to set up, configure, update or restore their Claude preferences or skills on a machine.
 ---
 
 # Claude setup
@@ -41,10 +41,10 @@ Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: kee
 - When the user wants work to start at a specific time ("start at 14:40", "do this in the last 10 min of the 5h window"), schedule it with the session cron (`CronCreate`, one-shot, local time) carrying the full task as prompt - never by sleeping or polling. Tell the user the scheduled time and that the job only lives while this session stays open.
 
 ## Skills
-- Skills live in `~/.claude/skills/` and are synced between devices over the public GitHub repo `lerchenflo/claudeskills` (local clone `~/.claude/skills-repo`, grouped as `<group>/<skill>/`). They are also mirrored to Nextcloud at `~/Nextcloud/Schneaggchat/claude_skills/` (macOS: `~/Library/CloudStorage/Nextcloud-*/Schneaggchat/claude_skills/`).
-- After creating or changing a skill, copy the updated skill folder to the Nextcloud folder and to its group folder in `~/.claude/skills-repo` (new skill: pick a fitting group and add it to the skill list in the repo README), then `git pull --rebase`, commit and push.
+- Skills live in `~/.claude/skills/` and are synced between devices over the public GitHub repo `lerchenflo/claudeskills` (local clone `~/.claude/skills-repo`, grouped as `<group>/<skill>/`).
+- After creating or changing a skill, copy the updated skill folder to its group folder in `~/.claude/skills-repo` (new skill: pick a fitting group and add it to the skill list in the repo README), then `git pull --rebase`, commit and push.
 - Project-specific skills (named after or only useful for one project) stay in that project's `.claude/skills/`, never in `~/.claude/skills/` or the repo.
-- A SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) pulls new skill versions from GitHub. If it reports a conflict, or the Nextcloud copy of a skill differs from the local one (changed on another device), do not overwrite blindly: merge both versions (keep every rule from both, newest wording wins on conflicts), write the merged result to all places, push, and tell the user what was merged.
+- A SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) pulls new skill versions from GitHub. If it reports a conflict (the skill was changed both here and on another device), do not overwrite blindly: merge both versions (keep every rule from both, newest wording wins on conflicts), write the merged result to both places, push, and tell the user what was merged.
 ```
 
 ## 2. Status line
@@ -88,20 +88,19 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 }
 ```
 
-For `hooks`, append the entry to any existing `SessionStart` list and never add it twice. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/` and the Nextcloud folder. It never overwrites a local copy that has its own changes; those are printed as conflicts into the session for Claude to merge. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
+For `hooks`, append the entry to any existing `SessionStart` list and never add it twice. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/`. It never overwrites a local copy that has its own changes; those are printed as conflicts into the session for Claude to merge. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
 
-Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub or Nextcloud - this section is their only source.
+Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub - this section is their only source.
 
-## 4. Skills from GitHub and Nextcloud
+## 4. Skills from GitHub
 
 1. Make sure `~/.claude/skills-repo` is up to date (step 0). Pushing needs the user's GitHub login on this device (`gh auth login` or an SSH key); if a push fails, tell the user how to log in.
 2. The repo groups skills as `<group>/<skill>/`; locally they are flat as `~/.claude/skills/<skill>/`. Compare each skill:
    - only in the repo: copy it into `~/.claude/skills/`;
    - only local: if it is project-specific, tell the user it belongs in that project's `.claude/skills/` and leave it; otherwise copy it into a fitting group folder in the repo and add it to the README skill list;
    - in both but different: merge as described in the Skills rules above.
-3. If the Nextcloud folder exists (`~/Nextcloud/Schneaggchat/claude_skills/`, on macOS `~/Library/CloudStorage/Nextcloud-*/Schneaggchat/claude_skills/`), compare it with `~/.claude/skills/` the same way; skills only in Nextcloud go into `~/.claude/skills/` and the repo. If the folder does not exist on this device, say so and skip it.
-4. If the repo changed, show the user `git -C ~/.claude/skills-repo status --short`, then commit and push once they agree.
-5. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force` once. It records the synced commit, so from then on the hook only installs what changes on GitHub.
+3. If the repo changed, show the user `git -C ~/.claude/skills-repo status --short`, then commit and push once they agree.
+4. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force` once. It records the synced commit, so from then on the hook only installs what changes on GitHub.
 
 Skip `~/.claude/skills/synced/` (Anthropic's built-in skills, managed by the app) everywhere and never put a `settings.json` into a skills folder.
 
