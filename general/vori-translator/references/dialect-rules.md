@@ -132,6 +132,9 @@ A participle that already ends in -a takes the ending on top: iglada →
 "in die richtiga Reihafolg" → fixed). The -a ending is for masculine, neuter
 and plural ("s schlüßenda Anführungszeicha", "die fallanda Stüa").
 
+**Without an article the plural keeps -e**: "nur **klenne** Sprüng" (rodeo draft
+"nur klenna Sprüng" → fixed). The -a only comes after an article or possessive.
+
 ## 3. Verbs
 
 Infinitive ends in **-a** (macha, löscha, starta). Present tense:
