@@ -47,6 +47,7 @@ STANDARD_GERMAN_MARKERS = [
 
 # Spelling variant groups seen in the AT file. First entry = preferred form.
 VARIANT_GROUPS = [
+    ["Züh", "Zün"],
     ["glich", "gliech"],
     ["gliche", "glieche"],
     ["glicha", "gliecha"],
