@@ -116,7 +116,7 @@ forms so the app stays consistent. When the file disagrees with this list
 | Wochenende | Wochenende |
 | mitkommen (kann) | mitko (kann) |
 | Stein / Steine | Stua (masc: an Stua) / Stüa ("die fallanda Stüa", Tropfstüa) |
-| Zaun / Zäune | Züh ("mitta durch d Züh"; older "Zün" in the rodeo intro) |
+| Zaun / Zäune | Züh ("mitta durch d Züh", "über d Züh jucka") – not Zün |
 | Berg | Berg (not Bearg) |
 | anziehen | azüha |
 | weinen | blägga |
