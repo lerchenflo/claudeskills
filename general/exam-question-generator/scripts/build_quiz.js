@@ -7,7 +7,7 @@
 //    at least 45 % have one correct, at most 25 % have three or four, and all four
 //    correct at most once per 30 questions; with ≥ 10, every count 1, 2, 3 occurs
 //  - length cue: among single-correct core questions, the correct option is the
-//    longest option in at most 40 % (chance ≈ 25 %)
+//    longest option in at most 40 % (chance ≈ 25 %); warns (no exit) below 10 %
 //  - stems: never "Welche EINE" / "genau eine" / "die einzige"; superlatives
 //    ("am besten", "am ehesten", "am deutlichsten", "hauptsächlich" …) with several
 //    correct options only in a slash-form stem that hides the count ("Welche Aussage/n
@@ -91,3 +91,6 @@ console.log('OK', N, 'questions', nx ? `(core ${NC}, extended ${nx})` : '', JSON
   `| core correct per question: 1×${nC[1]} (${pct(nC[1])} %) 2×${nC[2]} 3×${nC[3]} 4×${nC[4]}`,
   `| recall ${r} applied ${N - r - code} code/formula ${code}`,
   `| longest option correct in ${longestRight}/${singles.length} single-answer questions`);
+// Over-correction is a cue too ("the longest option is always wrong"); chance is ≈ 25 %.
+if (singles.length >= 20 && longestRight < 0.1 * singles.length)
+  console.warn(`WARNING reverse length cue: the correct option is the longest in only ${longestRight}/${singles.length} single-answer questions; aim for ≈ 25 %`);
