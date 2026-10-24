@@ -42,8 +42,11 @@ harder to answer by pattern-matching the slide text.
   with a full stop („Controller.“, „Visibility.“, „Increment.“), otherwise one
   line. All four options have similar length and the same grammatical shape;
   the correct option must not be the longest or most qualified one by habit
-  (the build checks this). Put precision into the wording of all four options,
-  not only into the right one.
+  (the build checks this). Don't over-correct either: if the correct option
+  is almost never the longest (near 0 %), "the longest is always wrong"
+  becomes the cue. Aim for about 25 % (chance level with four options); ties
+  don't count. Put precision into the wording of all four options, not only
+  into the right one.
 - **Every correct option must be unambiguously backed by the source, every
   wrong option clearly wrong for a nameable reason.** With multi-answer, an
   "arguably true" distractor makes the question unanswerable — drop it.
@@ -505,11 +508,33 @@ Don't default to all-recall or all-applied. Unless the user specifies otherwise:
    Before delivering, scan the set for any who/when/source-citation question
    ("Von wem stammt …", "Wer …", "Welches Jahr …") and replace it with a
    question about the concept itself.
-5. **Give a one- or two-sentence justification per question**, citing the
-   specific source fact, and — for wrong options where it adds value — a short
-   note on *why* that option is wrong. Keep this compact; it's a check for the
-   user, not a re-teaching of the topic.
-6. **If a fact needed to make a good question isn't actually in the source
+5. **Give every question a detailed explanation** (the user wants to learn
+   from the answer box, not only check it). Three parts, separated by `<br>`
+   in the HTML quiz:
+   - **Lösung:** why the correct option(s) are right, citing the specific
+     source fact (slide number, summary section, notes), quoted where possible;
+   - **Die anderen:** *every* wrong option, named by a short quote of its text,
+     with the nameable reason it is wrong (which neighbouring concept it
+     really describes, what it inverts, that it is not in the source);
+   - optional **Merke:** / **Logik:** – one-line takeaway, mnemonic or the
+     reasoning behind an order/mapping.
+   Typically 3–6 sentences. Don't label the parts „Richtig:“/„Falsch:“ – the
+   quiz's result line already says „Richtig.“/„Falsch.“, and „Falsch. …
+   Richtig: …“ reads confusingly.
+
+   Example (2 correct):
+   > `<b>Lösung:</b> Verifikation prüft gegen die Spezifikation – die ist
+   > erfüllt, also ist die Software verifiziert. Validierung prüft die Eignung
+   > für den Einsatzzweck (Folie 74) – die fehlt.<br><b>Die anderen:</b>
+   > „validiert, weil die Tests bestanden sind“ verwechselt die Begriffe;
+   > „Verifikation hätte den Fehler sicher gefunden“ – unmöglich, was nicht in
+   > der Spezifikation steht, kann eine Prüfung gegen sie nicht vermissen.<br>
+   > <b>Merke:</b> Korrekt nach Spezifikation kann trotzdem unbrauchbar sein.`
+6. **Check every question before building**: re-read stem, options and key
+   against the source. Replace an option that is only "arguably" right or
+   wrong (e.g. it also partly fits the neighbouring definition) with one that
+   is unambiguous, and say in the reply which questions you changed.
+7. **If a fact needed to make a good question isn't actually in the source
    material**, say so rather than inventing exam-sounding content that isn't
    backed by the document — flag it as general knowledge, the same way you would
    in a normal answer.
@@ -623,7 +648,7 @@ double-click), saved next to the source material with a distinct name such as
   ];
   ```
   `t` topic, `y` archetype R1–R6/A1–A6/C1, `o` exactly 4 options, `c` sorted array of
-  correct indices, `e` explanation, `id` unique, optional `code` (shown as a
+  correct indices, `e` explanation (HTML; Lösung / Die anderen / Merke, see workflow step 5), `id` unique, optional `code` (shown as a
   code block under the stem), optional `x:1` = extended-mode question. The
   correct-count mix (≈55/30/15) applies to the core set on its own.
 - Build + validate in one step:
