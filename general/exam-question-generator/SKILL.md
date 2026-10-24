@@ -560,6 +560,25 @@ When the user wants a summary alongside (or before) the questions:
   an "Abgrenzungen" table and self-check questions at the end).
 - **Mark anything not on the slides** as an addition (ERGÄNZUNG) so the user
   knows what to double-check.
+- **Resolve open points with the user before the summary is final – never
+  leave them in the document.** No "Zum Review" / "offene Punkte" boxes or
+  chapters in the summary; its purpose is that the user has settled them
+  first. While reading, collect everything only the user can answer:
+  unexplained symbols or labels on slides (stars, speech bubbles), wording
+  that only makes sense with what was said in the lecture, illegible or
+  ambiguous handwriting, notes whose connection is unclear, gaps in the slide
+  numbering (missing slides?), contradictions between sources or with common
+  textbook usage (which version counts for the exam?). Then ask with
+  **AskUserQuestion** (up to 4 questions per call, several calls if needed;
+  per question 2–4 concrete options such as „Deutung übernehmen (als
+  Ergänzung markiert)“, „Weglassen“, „Beide Fassungen nennen“ – the user's own
+  answer goes into "Other"). Write the answers in: what the user confirms
+  becomes normal content (source „laut Vorlesung“), what stays unknown is
+  dropped or – if needed for understanding – stated neutrally in one
+  sentence. Don't ask about things you can check yourself (e.g. whether the
+  slide really lists the same point twice) – state them plainly. Ask before
+  rendering the PDF; if the user wants to see a draft first, ask right after
+  the draft and update it.
 - Produce the PDF by writing HTML + print CSS and rendering it with a headless
   browser (`google-chrome-stable --headless --no-pdf-header-footer
   --print-to-pdf=out.pdf file.html`) or WeasyPrint if installed. Look at a page
