@@ -125,6 +125,15 @@ forms so the app stays consistent. When the file disagrees with this list
 | Fahrrad | Fahrrad (not Velo) |
 | mit / bei Freunden (dat. pl.) | mit / bei Freunden (keeps the -n, not "mit Freunde") |
 | tägliche (before a plural noun) | tägliche ("Tägliche Rätsel", "Tägliche Challenge") – not täglicha |
+| auch | **o** ("Des goht o offline") – preferred over ou (test answer 2026-10-26) |
+| immer (always) | immer – stays Standard, not allat/allad |
+| gestern | gest ("Gest um 18:00 gseaha") |
+| gesehen | gseaha (ea shift from seaha also in the participle – draft "gseha" → fixed) |
+| hier | do ("Do tippa zum starta") |
+| vielleicht | villicht ("Villicht morn.") |
+| dort (there) | döt, single t ("I bin scho döt") |
+| ein bisschen | a bitzle ("Wart a bitzle") |
+| nicht mehr | nümma ("Du bisch nümma in da Gruppe") – not "ned meh" / "ned mehr" |
 | Mädchen / Junge | Schmelle / Buab |
 | Brötchen / Kartoffeln | Brötle / Grumpara |
 | Freunde (casual story) | Kollega |
