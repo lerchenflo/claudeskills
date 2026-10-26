@@ -77,6 +77,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | Daten | Data (Benutzerdata, Standortdata) | | "Daten" in some compounds |
 | Medien | Media | Medien | |
 | Eintrag / Einträge | Itrag / Iträg | Eintrag, Einträge | everywhere, also "Neuer Itrag" |
+| Karteneintrag | Kartaitrag | Kartenitrag, Karteneintrag | draft Kartenitrag → fixed; compound joint follows the Vori word Karta, older Kartenanzeige / Kartenänderunga stay as they are |
 | Ausgabe | Usgab | Usgob | only aus→us |
 | Anweisung, Syntaxfehler, Compiler (code) | Anweisung, Syntaxfehler, Compiler | Awisung | programming terms stay Standard |
 | Mitglied | s Mitglied | da Mitglied | neuter article s |
