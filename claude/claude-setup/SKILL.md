@@ -24,7 +24,7 @@ Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: kee
 ```markdown
 # Global instructions
 
-- Always respond in English, regardless of the language the user writes in. Code comments, commit messages and docs follow the project's own conventions (e.g. translated string resources stay in their language).
+- Always respond in English, regardless of the language the user writes in. Only switch to another language when the user explicitly asks for it. Code comments, commit messages and docs follow the project's own conventions (e.g. translated string resources stay in their language).
 - When the user asks about progress ("how far along are you", "status?", "wie weit bist du"), always answer with a percentage of the current task or plan that is done (best estimate), then one short line on what is done and what comes next.
 
 ## Usage limits
