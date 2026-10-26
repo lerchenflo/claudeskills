@@ -19,6 +19,8 @@
 //    "die erste Aussage") – options are shuffled at runtime;
 //    text inside „…“ quotes and "z. B." is ignored
 //  - no who/when/source questions ("Von wem stammt" …)
+//  - stems and options never point at a specific slide/page/deck ("Folie 70", "Seite 12",
+//    "auf dieser Folie"); a general "laut Folien" is fine, slide numbers only in explanations
 //  - no in-class activities/exercises in stem or explanation ("Activity 3", "Mini-Aktivität" …)
 //  - optional `x: 1` marks an extended-mode question (same concept, new example); every topic
 //    with extended questions must also have core questions
@@ -32,6 +34,7 @@ const strip = s => String(s).replace(/<[^>]+>/g, '');
 const LETTER = /(^|[\s(„"/])[A-D](?=[\s)\/,:;=–.]|$)/;
 const BAN = /von wem|wer hat|wer prägte|wer entwickelte|wer erfand|in welchem jahr|auf welcher folie|who (coined|defined|developed)/i;
 const POSITION = /\b(?:die |den |der )?(?:ersten|letzten|erste|letzte|zweite|dritte|vierte|obere|untere)\s+(?:beiden|zwei|drei|Option(?:en)?|Aussage(?:n)?|Antwort(?:en)?|Paar(?:e|en)?|Einwände|Regeln|Zuordnung(?:en)?|Formulierung(?:en)?|Zeile(?:n)?)\b/i;
+const SLIDE_REF = /\b(?:folien?|slides?|seiten?|pages?|foliensatz|deck)\s*(?:nr\.?\s*)?\d+|\b(?:auf|in|von|zu) (?:der |dieser |jener |welcher )?folie\b|\bdiese(?:r)? folie\b/i;
 const SINGLE = /welche eine\b|die einzige|genau eine/i;
 const SUPERLATIVE = /am (besten|ehesten|deutlichsten|unmittelbarsten|wichtigsten|stärksten)|hauptsächlich/i;
 const SLASH = /\w\/(n|en|e|r|s|t)\b/;
@@ -51,6 +54,8 @@ QUESTIONS.forEach((x, i) => {
   if (LETTER.test(e)) err.push(`${n}: explanation references an option by letter: ${x.e.slice(0, 80)}`);
   if (POSITION.test(e)) err.push(`${n}: explanation references options by position (erste/letzte …): ${e.match(POSITION)[0]}`);
   if (BAN.test(x.q)) err.push(`${n}: who/when/source question`);
+  const slideRef = [x.q, ...(x.o || [])].map(strip).find(t => SLIDE_REF.test(t));
+  if (slideRef) err.push(`${n}: stem/option points at a specific slide/page: ${slideRef.match(SLIDE_REF)[0]}`);
   if (/aktivität|activity|übung|mini-akt/i.test(x.q + ' ' + x.e)) err.push(`${n}: mentions an in-class activity/exercise`);
   const stem = strip(x.q).replace(/„[^“]*“/g, '');
   if (SINGLE.test(stem)) err.push(`${n}: stem demands exactly one answer: ${x.q.slice(0, 80)}`);

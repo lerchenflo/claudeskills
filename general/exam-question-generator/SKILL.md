@@ -84,6 +84,14 @@ harder to answer by pattern-matching the slide text.
   question. Names, years and sources may appear as context inside a question,
   but they must never be what is being tested, and options must never be a
   list of names or years. Test the concept itself instead.
+- **Never point at a specific slide, page or deck in a stem or option.** No
+  "Welche Fragen stellt Folie 70 zur Spezifikation?", "Was zeigt die Grafik
+  auf Seite 12?", "Laut Folie 23 …", "im dritten Foliensatz". The learner
+  can't know what slide 70 says, and the exam never refers to slides; the
+  question must be answerable from understanding the topic. Ask about the
+  content instead: "Welche Frage/n sollte eine Spezifikation beantworten?".
+  A general "laut Folien" as a source qualifier is fine. Slide numbers may
+  appear in explanations only, as a pointer for review ("siehe Folie 70").
 - **Explanations never refer to options by letter or position.** Options are
   shuffled at runtime, so "B ist …", "C nennt …", "die erste Option" will point
   at the wrong answer. Name each option by a short quote of its own text
