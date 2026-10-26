@@ -115,8 +115,7 @@ forms so the app stays consistent. When the file disagrees with this list
 | Wetter | Weatta |
 | Wochenende | Wochenende |
 | mitkommen (kann) | mitko (kann) |
-| Stein / Steine | Stua (masc: an Stua) / Stüa ("die fallanda Stüa", Tropfstüa) |
-| Zaun / Zäune | Züh ("mitta durch d Züh", "über d Züh jucka") – not Zün |
+| Stein | Stua (masc: an Stua) |
 | Berg | Berg (not Bearg) |
 | anziehen | azüha |
 | weinen | blägga |
@@ -124,6 +123,8 @@ forms so the app stays consistent. When the file disagrees with this list
 | melken | mealka |
 | Verstecken (game) | Verstecki |
 | Fahrrad | Fahrrad (not Velo) |
+| mit / bei Freunden (dat. pl.) | mit / bei Freunden (keeps the -n, not "mit Freunde") |
+| tägliche (before a plural noun) | tägliche ("Tägliche Rätsel", "Tägliche Challenge") – not täglicha |
 | Mädchen / Junge | Schmelle / Buab |
 | Brötchen / Kartoffeln | Brötle / Grumpara |
 | Freunde (casual story) | Kollega |

@@ -106,8 +106,9 @@ data this skill gets. Do this without being asked again:
      (preferred form first), so `lint` catches the old form next time.
    If every change was a one-off (a typo, a taste choice with no rule behind
    it), say so and leave the skill alone.
-4. Copy the skill to `~/.claude/skills-repo/general/vori-translator/`, confirm
-   both copies are identical (`diff -r`), then `git pull --rebase`, commit and push.
+4. Copy the skill to the synced folder
+   `/home/flo/Nextcloud/Schneaggchat/claude_skills/vori-translator/` and
+   confirm both copies are identical (`diff -r`).
 5. Report the learned patterns in a short list (draft → fix).
 
 ## Mode B – lint the existing file

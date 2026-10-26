@@ -45,7 +45,11 @@ contraction **"bem"** = beim/bei dem: draft "dia bim langa Drucka" → kept "dia
 (also "Gwinner"). Rounded or reduced forms you *construct* are the most
 common mistake, so when a word isn't in the file, prefer the plainer spelling.
 Don't drop a final -n that isn't an -en ending: Seilbahn stays Seilbahn (not
-"Seilbah"). Exceptions the translator chose on purpose (don't "fix" them):
+"Seilbah"). The dative plural of Freund keeps its Standard -n: "nur mit
+**Freunden**", "bei Freunden" (website draft "nur mit Freunde" → fixed). An
+adjective before a plural noun without article keeps its Standard **-e**, it
+does not become -a: "**Tägliche** Rätsel, Spiele und Highscores" (draft
+"Täglicha Rätsel" → fixed), like the app's "Tägliche Challenge". Exceptions the translator chose on purpose (don't "fix" them):
 rodeo "Heißluftballo", and the rocket button "Raketa" next to the vehicle
 name "Rakete". The noun prefix **Zu-** stays: Zugang → Zugangsdata (not
 "Zuagangsdata"). Don't coin compressed adverbs: "zuletzt aktualisiert" is
@@ -131,9 +135,6 @@ A participle that already ends in -a takes the ending on top: iglada →
 "a **uafache** Liste", "in die **richtige** Reihafolg" (C-Challenge draft
 "in die richtiga Reihafolg" → fixed). The -a ending is for masculine, neuter
 and plural ("s schlüßenda Anführungszeicha", "die fallanda Stüa").
-
-**Without an article the plural keeps -e**: "nur **klenne** Sprüng" (rodeo draft
-"nur klenna Sprüng" → fixed). The -a only comes after an article or possessive.
 
 ## 3. Verbs
 
