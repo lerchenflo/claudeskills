@@ -25,7 +25,7 @@ words the file has not used yet.
 | Standard German | Vori | Examples from the file |
 |---|---|---|
 | unstressed final **-en** (infinitive, plural, -ungen) | **-a** | suchen→suacha, löschen→löscha, Einstellungen→Einstellunga, Gruppen→Gruppa, Optionen→Optiona, Minuten→Minuta |
-| prefix **ge-** | **g-** (dropped before t/p/k/b/d/g) | gelesen→gleasa, geladen→glada, gemacht→gmacht, geschickt→gschickt · getestet→testet, geplant→plant, geteilt→teilt |
+| prefix **ge-** | **g-** (dropped before t/p/k/b/d/g) | gelesen→gleasa, gesehen→**gseaha** (keep the ea of seaha, draft "gseha" → fixed), geladen→glada, gemacht→gmacht, geschickt→gschickt · getestet→testet, geplant→plant, geteilt→teilt |
 | stressed short/long **e / ä** | **ea** | lesen→leasa, sehen→seaha, Feld→Feald, Geld→Geald, melden→mealda, schnell→schneall, Weg→Weag, essen→eassa, rechnen→reachna |
 | **u / ie** (long, old diphthong) | **ua / ia** | suchen→suacha, gut→guat, versuchen→versuacha, tun→tua, kriegen→kriaga, Liebe→Liabe, sieht→siaht, hinzu→dazua |
 | **ei** from old long *î* | **i** (closed) / **ü** | Zeit→Zit, Eintrag→**Itrag** (everywhere, also "Neuer Itrag", "Itrag löscha"), mein/dein→min/din, ein- (prefix)→i- (einloggen→ilogga, eingeben→igia, einladen→ilada), schreiben→schrieba, bleiben→blieba, weiter→witta, Seite→Sitta, reiten→ritta, seit→sit, wischen→wüscha |
