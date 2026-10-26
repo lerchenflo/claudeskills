@@ -47,7 +47,6 @@ STANDARD_GERMAN_MARKERS = [
 
 # Spelling variant groups seen in the AT file. First entry = preferred form.
 VARIANT_GROUPS = [
-    ["Züh", "Zün"],
     ["glich", "gliech"],
     ["gliche", "glieche"],
     ["glicha", "gliecha"],
@@ -74,6 +73,7 @@ VARIANT_GROUPS = [
     ["Grüße", "Hoi"],
     ["uafach", "afach", "eifach", "einfach"],
     ["uafache", "einfache"],
+    ["tägliche", "täglicha"],
     ["bem", "bim"],
     ["klingt", "tönt"],
     ["liaba", "lieber"],
