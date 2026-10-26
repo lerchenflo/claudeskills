@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
-"""Helper for the Vorarlbergerisch (values-de-rAT) string resources.
+"""Helper for the Vorarlbergerisch (values-de-rAT / strings-de-at) string resources.
 
-Compares values/ (EN), values-de/ (DE) and values-de-rAT/ (AT = Vori) strings.xml.
+Compares EN, DE and AT (= Vori) strings of the app (values*/strings.xml) or of the
+server website (strings-en/-de/-de-at.xml).
 
 Commands:
   missing                 keys present in EN but not in AT (with EN + DE text)
   show KEY [KEY ...]      EN / DE / AT side by side for the given keys
   dump [--prefix P] [--diff-only] [--same-only]
                           all triples (optionally filtered) for manual review
-  lint                    mechanical checks on the AT file (see SKILL.md)
-  compare FILE.json       show where the file now differs from a proposal JSON
+  lookup WORD [WORD ...]  how a word is written: vocab.md rows plus every Vori string
+                          (app and website file) with a word starting with it
+  check FILE.json         check a draft {"key": "value"} before inserting it: avoid
+                          forms from vocab.md, Standard-German leftovers, placeholders,
+                          \n / spaces, and words neither Vori file has used yet
+  lint                    mechanical checks on the whole AT file (see SKILL.md)
+  compare FILE.json       show where the file now differs from a draft JSON
                           (= the user's corrections after an insert)
   insert FILE.json [--replace]
-                          insert approved translations {"key": "value", ...}
-                          into AT, each placed after its nearest EN predecessor
-                          that already exists in AT. --replace also overwrites
+                          run check, then write the draft into AT, each new key placed
+                          after its nearest EN predecessor. --replace also overwrites
                           existing keys in place.
 
 Global options:
@@ -45,73 +50,42 @@ STANDARD_GERMAN_MARKERS = [
     "diesen", "zeit", "gehen", "suchen",
 ]
 
-# Spelling variant groups seen in the AT file. First entry = preferred form.
-VARIANT_GROUPS = [
-    ["glich", "gliech"],
-    ["gliche", "glieche"],
-    ["glicha", "gliecha"],
-    ["Nochricht", "Nachricht"],
-    ["Nochrichta", "Nachrichta"],
-    ["künnand", "künnan", "kümma"],
-    ["nomml", "noml", "nomol"],
-    ["ned", "net", "nit"],
-    ["hond", "hon"],
-    ["kua", "koa"],
-    ["kuan", "koan"],
-    ["Umfrog", "Umfrag"],
-    ["zruck", "zurück"],
-    ["Joar", "Jahr"],
-    ["füf", "fünf"],
-    ["Itrag", "Eintrag"],
-    ["E-Mail", "Email"],
-    ["huam", "ham"],
-    ["azoaga", "anzeigen"],
-    ["sealba", "sealbst"],
-    ["ussahalb", "außerhalb"],
-    ["gnennt", "gnannt"],
-    ["gnennta", "gnannta"],
-    ["Grüße", "Hoi"],
-    ["uafach", "afach", "eifach", "einfach"],
-    ["uafache", "einfache"],
-    ["tägliche", "täglicha"],
-    ["o", "ou"],
-    ["do", "hier"],
-    ["gest", "geschter", "gester", "gestern"],
-    ["villicht", "vilicht", "vielleicht"],
-    ["döt", "dött", "dort"],
-    ["bitzle", "bitz", "bissle", "bisschen"],
-    ["nümma", "ned meh", "ned mehr"],
-    ["bem", "bim"],
-    ["klingt", "tönt"],
-    ["liaba", "lieber"],
-    ["überno", "übernumma"],
-    ["festghebt", "festghalta"],
-    ["ufpasst", "uufpasst"],
-    ["bliebt", "blibt"],
-    ["ischas", "isch es"],
-    ["mealdat", "mealdet", "meldet"],
-    ["dinna", "drin"],
-    ["bei", "bi"],
-    ["Preise", "Priese"],
-    ["klenn", "klua"],
-    ["klenns", "kluas"],
-    ["sött", "söt"],
-    ["dafür", "doför"],
-    ["louft", "laft", "läft"],
-    ["stoht", "staht"],
-    ["ago", "aganga"],
-    ["hängand", "hangand"],
-    ["nägschtes", "nägschts"],
-    ["ussania", "usseneh", "ussaneh"],
-    ["agno", "agnumma"],
-    ["davo", "dävo"],
-    ["ufam", "uf am"],
-    ["mitam", "mit am"],
-    ["liast", "läsat", "lesat"],
-    ["zuasäga", "zuasaga"],
-    ["gliecha", "gleicha"],
-    ["zelland", "zähland", "zählend"],
-]
+VOCAB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "references", "vocab.md")
+WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*")
+
+
+def load_vocab():
+    """Rows of the vocab.md table: dicts with de, vori, avoid (list), note."""
+    rows = []
+    with open(VOCAB_PATH, encoding="utf-8") as f:
+        for line in f:
+            if not line.startswith("| ") or line.startswith("| de |") or line.startswith("|---"):
+                continue
+            cells = [c.strip() for c in line.strip().strip("|").split(" | ")]
+            if len(cells) < 4:
+                cells += [""] * (4 - len(cells))
+            de, vori, avoid, note = cells[:4]
+            rows.append({"de": de, "vori": vori, "note": note,
+                         "avoid": [a.strip() for a in avoid.split(",") if a.strip()]})
+    return rows
+
+
+def word_re(form):
+    """Whole-word match, a hyphen counts as part of the word. Only the first letter ignores
+    case (sentence start), so the avoid form "eu" doesn't hit the abbreviation "EU"."""
+    first = form[:1]
+    head = f"[{re.escape(first.lower())}{re.escape(first.upper())}]" if first.isalpha() else re.escape(first)
+    return re.compile(rf"(?<![\w-]){head}{re.escape(form[1:])}(?![\w-])")
+
+
+def avoid_hits(text, vocab, skip=()):
+    """(form, row) for every vocab avoid form found in text."""
+    hits = []
+    for row in vocab:
+        for form in row["avoid"]:
+            if form.lower() not in skip and word_re(form).search(text):
+                hits.append((form, row))
+    return hits
 
 
 # Paths of the three files; set in main() for either layout.
@@ -156,6 +130,41 @@ def load(path):
 
 def load_all(res):
     return load(PATHS["en"]), load(PATHS["de"]), load(PATHS["at"])
+
+
+def other_at_files():
+    """The Vori file of the sibling repo (app <-> server), so lookups and checks see both."""
+    root = os.path.dirname(os.path.abspath(PATHS["at"]))
+    while root != os.path.dirname(root) and not os.path.isdir(os.path.join(root, ".git")):
+        root = os.path.dirname(root)
+    parent = os.path.dirname(root)
+    candidates = [os.path.join("composeApp", "src", "commonMain", "composeResources", "values-de-rAT", "strings.xml"),
+                  os.path.join("src", "main", "resources", "static", "i18n", "strings-de-at.xml")]
+    found = []
+    try:
+        siblings = sorted(os.listdir(parent))
+    except OSError:
+        return found
+    for name in siblings:
+        for rel in candidates:
+            path = os.path.join(parent, name, rel)
+            if os.path.isfile(path) and os.path.abspath(path) != os.path.abspath(PATHS["at"]):
+                found.append(path)
+    return found
+
+
+def vori_corpus():
+    """{(file label, key): value} of every Vori string in this and the sibling repo."""
+    corpus = {}
+    for path in [PATHS["at"]] + other_at_files():
+        label = "website" if path.endswith("strings-de-at.xml") else "app"
+        for k, v in load(path).items():
+            corpus[(label, k)] = v
+    return corpus
+
+
+def words(text):
+    return {w.lower() for w in WORD_RE.findall(text)}
 
 
 def triple(key, en, de, at):
@@ -232,14 +241,15 @@ def cmd_lint(res, args):
             add("Much shorter than DE (summarised or outdated? compare meaning)",
                 f"{k}: DE {len(d)} chars, AT {len(v)} chars")
 
-    all_text = "\n".join(f"{k}\t{v}" for k, v in at.items())
-    for group in VARIANT_GROUPS:
-        counts = {w: len(re.findall(rf"\b{re.escape(w)}\b", all_text)) for w in group}
-        if sum(1 for c in counts.values() if c) > 1:
-            minority = [w for w in group[1:] if counts[w]]
-            keys = sorted({k for k, v in at.items() for w in minority if re.search(rf"\b{re.escape(w)}\b", v)})
-            add("Spelling variants (first = preferred)",
-                f"{' / '.join(f'{w} {counts[w]}x' for w in group)} | minority in: {', '.join(keys)}")
+    markers = {m.lower() for m in STANDARD_GERMAN_MARKERS}
+    for row in load_vocab():
+        for form in row["avoid"]:
+            if form.lower() in markers:
+                continue  # already reported as a Standard-German leftover
+            keys = [k for k, v in at.items() if word_re(form).search(v)]
+            if keys:
+                add("Known wrong or old forms (vocab.md; older strings: fix only when asked)",
+                    f"{form} -> {row['vori']} | in: {', '.join(keys)}")
 
     print(f"EN {len(en)} keys | DE {len(de)} | AT {len(at)} | missing in AT {len([k for k in en if k not in at])}\n")
     for title, lines in sections.items():
@@ -247,6 +257,106 @@ def cmd_lint(res, args):
         for line in lines:
             print(f"  - {line}")
         print()
+
+
+def check_draft(draft, en, de):
+    """Problems of a draft {key: value}; returns (sections dict, has_errors)."""
+    vocab = load_vocab()
+    corpus = vori_corpus()
+    known = set()
+    for v in corpus.values():
+        known |= words(v)
+    for row in vocab:
+        known |= words(row["vori"])
+    marker_re = re.compile(r"\b(" + "|".join(STANDARD_GERMAN_MARKERS) + r")\b", re.I)
+
+    sections = {}
+    errors = False
+
+    def add(section, line):
+        sections.setdefault(section, []).append(line)
+
+    copied, coined = {}, {}
+    for key, value in draft.items():
+        if key not in en:
+            add("ERROR key not in EN", key)
+            errors = True
+            continue
+        value = xml_escape_value(value)
+        if placeholders(value) != placeholders(en[key]):
+            add("ERROR placeholder mismatch vs EN", f"{key}: EN {placeholders(en[key])} draft {placeholders(value)}")
+            errors = True
+        if value.count("\\n") != en[key].count("\\n"):
+            add("Line-break (\\n) count differs from EN", f"{key}: EN {en[key].count(chr(92) + 'n')} draft {value.count(chr(92) + 'n')}")
+        d = de.get(key, "")
+        if d and (d[:1].isspace() != value[:1].isspace() or d[-1:].isspace() != value[-1:].isspace()):
+            add("Leading/trailing space differs from DE (concatenated strings)", f"{key}: DE {d!r} draft {value!r}")
+        flagged = set()
+        for form, row in avoid_hits(value, vocab):
+            add("Use the vocab form (vocab.md)", f"{key}: '{form}' -> {row['vori']}" + (f"  ({row['note']})" if row["note"] else ""))
+            flagged |= words(form)
+        leftovers = sorted({m.group(1).lower() for m in marker_re.finditer(value)})
+        flagged |= set(leftovers)
+        if leftovers and value != d:
+            add("Standard-German leftovers", f"{key}: {', '.join(leftovers)}")
+        if value == d:
+            add("Identical to DE (fine for loanwords/names)", f"{key}: {value}")
+        source_en, source_de = words(en[key]), words(d)
+        for w in words(value) - known - flagged:
+            if len(w) < 3 or w in source_en:
+                continue  # short words, names and loanwords taken over from EN
+            (copied if w in source_de else coined).setdefault(w, []).append(key)
+
+    def hint(w):
+        return "  <- Standard -en ending, -a?" if w.endswith("en") else ""
+
+    for w, keys in sorted(copied.items()):
+        add("Copied from DE, not in any Vori file (left unshifted? lookup it)", f"{w}  [{', '.join(keys)}]{hint(w)}")
+    for w, keys in sorted(coined.items()):
+        add("New words, not in any Vori file (formed from the rules - tell the user)", f"{w}  [{', '.join(keys)}]{hint(w)}")
+    return sections, errors
+
+
+def print_sections(sections):
+    for title, lines in sections.items():
+        print(f"## {title} ({len(lines)})")
+        for line in lines:
+            print(f"  - {line}")
+        print()
+
+
+def cmd_check(res, args):
+    en, de, at = load_all(res)
+    with open(args.file, encoding="utf-8") as f:
+        draft = json.load(f)
+    sections, errors = check_draft(draft, en, de)
+    print_sections(sections)
+    print(f"{len(draft)} draft strings checked" + (" - ERRORS, insert would skip those keys" if errors else ""))
+    sys.exit(1 if errors else 0)
+
+
+def cmd_lookup(res, args):
+    vocab = load_vocab()
+    corpus = vori_corpus()
+    for term in args.words:
+        t = term.lower()
+        # From the start of a word, so a stem finds its forms ("diskut") but "auch" skips "Bauch"
+        starts = re.compile(rf"(?<![\w]){re.escape(t)}", re.I)
+        print(f"=== {term}")
+        rows = [r for r in vocab if any(starts.search(c) for c in [r["de"], r["vori"], r["note"]] + r["avoid"])]
+        for r in rows:
+            avoid = f"  avoid: {', '.join(r['avoid'])}" if r["avoid"] else ""
+            note = f"  ({r['note']})" if r["note"] else ""
+            print(f"  vocab: {r['de']} -> {r['vori']}{avoid}{note}")
+        hits = [(label, k, v) for (label, k), v in corpus.items() if starts.search(v)]
+        for label, k, v in hits[:args.limit]:
+            i = starts.search(v).start()
+            snippet = v[max(0, i - 45):i + len(t) + 45].replace("\\n", " ").replace("\n", " ")
+            print(f"  {label} {k}: …{snippet}…")
+        if len(hits) > args.limit:
+            print(f"  … {len(hits) - args.limit} more strings")
+        if not rows and not hits:
+            print("  not used yet - form it from dialect-rules.md and list it as a new word")
 
 
 def cmd_compare(res, args):
@@ -275,6 +385,10 @@ def cmd_insert(res, args):
     at_path = PATHS["at"]
     with open(args.file, encoding="utf-8") as f:
         new = json.load(f)
+    sections, _ = check_draft(new, en, de)
+    if sections:
+        print("# check (fix 'Use the vocab form' / leftovers with insert --replace)\n")
+        print_sections(sections)
     with open(at_path, encoding="utf-8") as f:
         text = f.read()
 
@@ -331,6 +445,11 @@ def main():
     d.add_argument("--prefix")
     d.add_argument("--diff-only", action="store_true")
     d.add_argument("--same-only", action="store_true")
+    lk = sub.add_parser("lookup")
+    lk.add_argument("words", nargs="+")
+    lk.add_argument("--limit", type=int, default=8)
+    ck = sub.add_parser("check")
+    ck.add_argument("file")
     sub.add_parser("lint")
     c = sub.add_parser("compare")
     c.add_argument("file")
@@ -351,8 +470,8 @@ def main():
             if not i18n:
                 sys.exit("No values-de-rAT/strings.xml or strings-de-at.xml found below the cwd; pass --res or --i18n")
             PATHS.update(i18n_paths(i18n))
-    {"missing": cmd_missing, "show": cmd_show, "dump": cmd_dump,
-     "lint": cmd_lint, "compare": cmd_compare, "insert": cmd_insert}[args.cmd](res, args)
+    {"missing": cmd_missing, "show": cmd_show, "dump": cmd_dump, "lookup": cmd_lookup,
+     "check": cmd_check, "lint": cmd_lint, "compare": cmd_compare, "insert": cmd_insert}[args.cmd](res, args)
 
 
 if __name__ == "__main__":
