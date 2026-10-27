@@ -26,6 +26,7 @@ Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: kee
 
 - Always respond in English, regardless of the language the user writes in. Only switch to another language when the user explicitly asks for it. Code comments, commit messages and docs follow the project's own conventions (e.g. translated string resources stay in their language).
 - When the user asks about progress ("how far along are you", "status?", "wie weit bist du"), always answer with a percentage of the current task or plan that is done (best estimate), then one short line on what is done and what comes next.
+- Never assume. When a requirement, design choice or behaviour is unclear and the answer changes what you build, ask the user with the interview tool (AskUserQuestion) before acting - don't pick a default and only mention it afterwards. This matters most in bigger work (features, plans, multi-file changes): collect the open questions up front and ask them together. Only skip asking for facts you can check yourself (code, docs, tools).
 
 ## Usage limits
 - The user may ask to stop or pause at a usage limit (e.g. "stop at 12% of the 5h limit", "don't use more than 20%"). Read the current values from the file the status line writes:
