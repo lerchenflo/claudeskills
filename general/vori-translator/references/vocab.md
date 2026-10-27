@@ -127,6 +127,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | ein (neuter article) | a (also as) | | "a Event", "was as Programm usgit" - either is fine, don't sweep |
 | hier | do | hier | "Do tippa zum starta", "Do kannsch du …" |
 | dort | döt | dött, dort | single t |
+| weg (gone, away) | furt | weg | "sind denn für alle furt"; draft weg → fixed. Verb compounds keep weg- ("wegklickt") |
 | vielleicht | villicht | vilicht, vielleicht | "Villicht morn." |
 | ein bisschen | a bitzle | a bitz, bissle, bisschen | |
 | etwas / etwas anderes | eapas / eapas andres | etwas | |
