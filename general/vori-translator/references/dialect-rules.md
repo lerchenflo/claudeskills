@@ -14,6 +14,7 @@ has written yet. Single words and their wrong drafts live in vocab.md, not here.
 | prefix **ge-** | **g-**, dropped before t/p/k/b/d/g | gelesen→gleasa, gemacht→gmacht, getestet→testet, geteilt→teilt |
 | stressed **e / ä** | **ea** | lesen→leasa, Feld→Feald, schnell→schneall – also in participles and conjugated forms: gseaha, geassa, mealdat |
 | long **u / ie** | **ua / ia** | gut→guat, versuchen→versuacha, Liebe→Liabe, sieht→siaht |
+| **ie** in fliegen, ziehen (old *iu*) | **ü** | fliegt→flügt, anziehen→azüha – not ia (draft "fliagts" was fixed) |
 | **ei** from old *î* | **i** / **ü** | Zeit→Zit, mein→min, schreiben→schrieba, weiter→witta, ein- prefix→i- (ilogga, igia, ilada) |
 | **ei** from old *ei* | **oa / ua** | zwei→zwoa, heißt→hoast, weiß→woaß, kein→kua, einfach→uafach |
 | **au** from old *û* | **u** | aus→us, auf→uf, raus→usse, rauf→uffe, runter→abe |
