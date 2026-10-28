@@ -57,6 +57,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | Antworten | Antworta (Antwort stays) | Antworten | |
 | Optionen | Optiona (Option stays) | Optionen | |
 | Gruppe / Gruppen | Gruppe (also Gruppa) / Gruppa | Gruppen | |
+| Gruppe(n) erstellen (button, tour title) | Gruppe erstella | Gruppa erstella | also when EN says "Create groups" - same text as create_group / new_group (draft "Gruppa erstella" -> fixed) |
 | Name / Nutzername | Nama / Benutzernama | | |
 | Sprache | Sproch | Sprache | |
 | Jahr | Joar | Jahr | |
@@ -70,6 +71,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | Bestenliste | Highscores | Bestenliste | |
 | Zeichen | Zeicha | Zeichen | |
 | Feld | Feald | Feld | |
+| Spalte | Spalte | Spalta | also after ihra/da ("vo ihra Spalte"); "Spalta" was a hand-fix slip, user confirmed 2026-10-28 |
 | Haus / nach Hause | Hus / huam | ham | "gang ham" in the Undercover rules is on purpose |
 | Schnecken | Schneagga | Schnecken | |
 | Werkzeuge | Werkzüg | Werkzeuge | |
@@ -201,12 +203,13 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | dürfen | darf | Dörf | |
 | freuen | freu | | "I freu mi" |
 | verschieben | verschiaba | verschieben | |
+| fliegen / es fliegt | flüga / flügt ("denn flügts in d Luft") | fliaga, fliagt, fliagts | ie -> ü here, not ia (draft "fliagts" -> fixed); infinitive flüga formed, not used yet |
 | anziehen | azüha | | |
 | weinen | blägga | | |
 | melken | mealka | | |
 | schneien | schneia | | |
 | pitschnass | pflätschnass | | |
-| hervorheben | fürraheba | hervorheben | |
+| hervorheben / hervorgehoben (adjective) | fürraheba / fürraghobenes (Element) | hervorheben, fürraghobes | the adjective keeps -en- (draft "Fürraghobes Element" -> fixed) |
 | Verstecken (game) | Verstecki | | |
 | Fahrrad | Fahrrad | Velo | |
 | der beste … der Welt | … uf da Welt | | |
