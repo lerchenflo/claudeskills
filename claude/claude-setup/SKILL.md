@@ -28,6 +28,7 @@ Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: kee
 - When the user asks about progress ("how far along are you", "status?", "wie weit bist du"), always answer with a percentage of the current task or plan that is done (best estimate), then one short line on what is done and what comes next.
 - During longer tasks (several steps, a plan, multi-file work), report progress on your own every few steps, without being asked: one short line with the percentage of the task done (best estimate), e.g. "25% done - X finished, next Y". Keep the same scale for the whole task so the numbers only go up.
 - Never assume. When a requirement, design choice or behaviour is unclear and the answer changes what you build, ask the user with the interview tool (AskUserQuestion) before acting - don't pick a default and only mention it afterwards. This matters most in bigger work (features, plans, multi-file changes): collect the open questions up front and ask them together. Only skip asking for facts you can check yourself (code, docs, tools).
+- Always use the `caveman` skill at level **full** for every reply, in every session, unless the user says "stop caveman" or "normal mode".
 
 ## Usage limits
 - The user may ask to stop or pause at a usage limit (e.g. "stop at 12% of the 5h limit", "don't use more than 20%"). Read the current values from the file the status line writes:
