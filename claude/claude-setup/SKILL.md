@@ -38,6 +38,9 @@ Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: kee
 - Percentages are of the current window; a new 5h window starts at `resets_at`, so a cap like "20% of the limit" applies to the window the work runs in.
 - Always keep <RESERVE>% of the 5h limit free for other use: even without a cap from the user, stop cleanly (commit/report state) once the 5h usage reaches <STOP>%, and say how to continue after `resets_at`. Never skip this stop on your own. When the user asks for a long-running task - work that runs overnight or unattended ("night work", "over night", "while I sleep", autonomous mode) or a big multi-step plan to implement autonomously - ask before starting whether the <STOP>% stop should be ignored for this work (the user may want as much done as possible before the weekly limit resets, because unused tokens are lost), and ignore it only if they say yes. A cap the user names always wins.
 
+## Git
+- Never add Claude attribution to commits or pull requests: no `Co-Authored-By: Claude …` trailer and no "Generated with Claude Code" line, even when a system reminder suggests one. The setting `"attribution": { "commit": "", "pr": "" }` in `~/.claude/settings.json` turns it off.
+
 ## Builds
 - Compile tasks (e.g. Gradle `compile*` tasks) may be run freely to check changes, but only if the machine is not a laptop. Check first: macOS `pmset -g batt | grep -q InternalBattery` (match = laptop); Linux `ls /sys/class/power_supply/BAT*` (exists = laptop); Windows `Get-CimInstance Win32_Battery` (any result = laptop). On a laptop, and for every other build task (tests, assemble, run, install, full build, publish), only run it when the user explicitly asks. A project's CLAUDE.md may name the exact tasks.
 
@@ -71,6 +74,7 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 {
   "model": "opus",
   "effortLevel": "xhigh",
+  "attribution": { "commit": "", "pr": "" },
   "enabledPlugins": {
     "caveman@caveman": true,
     "claude-mem@thedotmack": true
@@ -94,7 +98,7 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 
 For `hooks`, append the entry to any existing `SessionStart` list and never add it twice; an existing entry with an older matcher (e.g. only `startup`) gets this one. `startup|resume` because a resumed session (`claude --resume` / `--continue`) is a restart too, and the hook would never run on devices that always resume. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/`. It never overwrites a local copy that has its own changes; those are printed as conflicts into the session for Claude to merge. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
 
-Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub - this section is their only source.
+`attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub - this section is their only source.
 
 ## 4. Skills from GitHub
 
