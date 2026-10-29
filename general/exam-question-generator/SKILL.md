@@ -1,6 +1,6 @@
 ---
 name: exam-question-generator
-description: Generate applied, reasoning-style multiple-choice exam questions from a study document (lecture slides, summaries, textbook chapters). Use this whenever the user uploads or references study material and asks for practice questions, a quiz, self-test questions, or exam prep — especially when they want questions that go beyond simple recall (e.g. "make it harder", "more like real exam questions", "questions that make me actually think", "not just picking the bullet point off the slide"). Also use when the user asks to reverse-engineer, replicate, or match the style of example exam questions they paste in. Also covers summarizing new lecture decks into a study-summary PDF first, and building an interactive HTML practice test (clickable question grid on the left, auto-advance on answer, back and check buttons, random-question-order toggle, extended mode). Extracts course PDFs to plain text once so later runs read text, not PDFs. Calibrated on real exam quizzes: always multiple choice with 4 options, mostly exactly 1 correct (sometimes 2–3, very rarely all 4), slash-form stems like "Welche Aussage/n beschreibt/en …"; never asks who/when/source-citation questions like "Von wem stammt".
+description: Generate applied, reasoning-style multiple-choice exam questions from a study document (lecture slides, summaries, textbook chapters). Use this whenever the user uploads or references study material and asks for practice questions, a quiz, self-test questions, or exam prep — especially when they want questions that go beyond simple recall (e.g. "make it harder", "more like real exam questions", "questions that make me actually think", "not just picking the bullet point off the slide"). Also use when the user asks to reverse-engineer, replicate, or match the style of example exam questions they paste in. Also covers summarizing new lecture decks into a study-summary PDF first, and building an interactive HTML practice test (clickable question grid on the left, auto-advance on answer, back and check buttons, random-question-order toggle, extended mode). Extracts course PDFs to plain text once so later runs read text, not PDFs. Asks per course: multiple choice only, or mixed with typed-answer questions (number / text / set) for simple calculations. Can also build a learning page: summary + connected quiz in one offline HTML file (solutions behind „Lösung zeigen“, a wrong answer links to the summary section). MC defaults from the first course (SE micro-quizzes): 4 options, mostly exactly 1 correct, slash-form stems like "Welche Aussage/n beschreibt/en …"; never asks who/when/source-citation questions like "Von wem stammt".
 ---
 
 # Exam Question Generator
@@ -13,14 +13,20 @@ harder to answer by pattern-matching the slide text.
 
 ## Hard rules (always apply)
 
-- **Every question is multiple choice** with exactly 4 options (A–D) and
-  **1–4 correct answers** (never 0). Mix, calibrated on real exam quizzes (see
-  "What the real exams look like"): about **55 % with 1 correct, 30 % with 2,
-  12–15 % with 3**; all 4 correct at most once per 30 questions and only when
-  the source lists exactly those four items as one set. Scoring is
-  all-or-nothing: a question counts only if exactly the correct set is ticked.
-  No open/free-text, true/false or fill-in-the-blank questions — convert source
-  examples into this format.
+- **Ask the format when a new quiz is created: „Multiple Choice only“ or
+  „gemischt“ (MC + input questions).** MC-only came from the first course (SE),
+  it is not a global rule. Mixed: simple calculations and short exact answers
+  (a number, a base conversion, a set) become **input questions**
+  (`kind:'num'|'text'|'set'`, see "Learning page"), never MC with guessable
+  options; concepts, definitions and "which statements are true" stay MC.
+  Open free-text / essay answers are never auto-checked: put them as theory
+  questions with a hidden solution into the summary instead.
+- **MC questions:** exactly 4 options (A–D), 1–4 correct (never 0), scored
+  all-or-nothing. The correct-count mix is **course-specific**: calibrate it on
+  the course's real exams (see "What the real exams look like"). Without real
+  exams, use the SE default (≈ 55 % one correct, 30 % two, 12–15 % three, all
+  four at most once per 30) and say so. The build enforces a mix only with
+  `--mix`.
 - **Stems use the exam's grammar.** Default: a slash form that hides the
   count — „Welche Aussage/n beschreibt/en …?“, „Welche/r Begriff/e …?“,
   „Welche Option/en treffen zu?“, „beschreib/en/t“. Superlatives („am besten“,
@@ -42,11 +48,8 @@ harder to answer by pattern-matching the slide text.
   with a full stop („Controller.“, „Visibility.“, „Increment.“), otherwise one
   line. All four options have similar length and the same grammatical shape;
   the correct option must not be the longest or most qualified one by habit
-  (the build checks this). Don't over-correct either: if the correct option
-  is almost never the longest (near 0 %), "the longest is always wrong"
-  becomes the cue. Aim for about 25 % (chance level with four options); ties
-  don't count. Put precision into the wording of all four options, not only
-  into the right one.
+  (the build checks this). Put precision into the wording of all four options,
+  not only into the right one.
 - **Every correct option must be unambiguously backed by the source, every
   wrong option clearly wrong for a nameable reason.** With multi-answer, an
   "arguably true" distractor makes the question unanswerable — drop it.
@@ -84,14 +87,6 @@ harder to answer by pattern-matching the slide text.
   question. Names, years and sources may appear as context inside a question,
   but they must never be what is being tested, and options must never be a
   list of names or years. Test the concept itself instead.
-- **Never point at a specific slide, page or deck in a stem or option.** No
-  "Welche Fragen stellt Folie 70 zur Spezifikation?", "Was zeigt die Grafik
-  auf Seite 12?", "Laut Folie 23 …", "im dritten Foliensatz". The learner
-  can't know what slide 70 says, and the exam never refers to slides; the
-  question must be answerable from understanding the topic. Ask about the
-  content instead: "Welche Frage/n sollte eine Spezifikation beantworten?".
-  A general "laut Folien" as a source qualifier is fine. Slide numbers may
-  appear in explanations only, as a pointer for review ("siehe Folie 70").
 - **Explanations never refer to options by letter or position.** Options are
   shuffled at runtime, so "B ist …", "C nennt …", "die erste Option" will point
   at the wrong answer. Name each option by a short quote of its own text
@@ -114,6 +109,12 @@ produce. Reach for the workflow below when the user:
   give worked examples are usually testing exactly this).
 
 ## What the real exams look like (calibration)
+
+> **Status (29.10.2026):** the numbers below come from the SE course's
+> **micro-quizzes**, which are over. That course now has real exams: read them
+> and re-calibrate before the next SE set. For any other course, calibrate on
+> its own exams/sample questions; use these numbers only as a fallback and say
+> so in the reply.
 
 Calibrated on 45 real quiz questions of the course this skill was built for
 (FH Vorarlberg „Projektbasierter Einstieg ins Software Engineering“ plus an
@@ -451,8 +452,11 @@ Don't default to all-recall or all-applied. Unless the user specifies otherwise:
 
 ## Workflow
 
-00. **Work from a plain-text extract, not from the PDFs.** Look for
-   `<course>/06_Claude/text/` (one `.txt` per PDF with page markers, plus
+00. **Work from a plain-text extract, not from the PDFs.** `<work>` = the
+   course's Claude working folder: use an existing `06_Claude/` or `Claude/`;
+   if neither exists, ask the user which name to use (paths below say
+   `06_Claude/`, read them as `<work>/`). Look for
+   `<course>/<work>/text/` (one `.txt` per PDF with page markers, plus
    `INDEX.md`). If it is missing or older than the slides, run
    `python3 scripts/extract_texts.py <course-root> [--skip <private folder>]`
    (needs poppler's `pdftotext`; Node.js for practice tests). It only
@@ -464,7 +468,11 @@ Don't default to all-recall or all-applied. Unless the user specifies otherwise:
    (`pdftoppm -png -r 55 -f N -l N`) and describe important diagrams in the
    README.
 
-0. **Ask how many questions** before generating anything, unless the user
+0. **Ask how many questions, the format and the page type** in one
+   AskUserQuestion call before generating anything (skip what the user already
+   said): count; „Multiple Choice only“ vs „gemischt“ (MC + input questions);
+   and – always ask, never assume – standalone quiz page or **learning page**
+   (summary + connected quiz, see "Learning page"). Count first: unless the user
    already gave a number. Use the AskUserQuestion tool with a few sensible
    options (e.g. 20 / 50 / 120, "Other" is added automatically) and, if the
    material spans several decks, ask in the same call whether to cover all
@@ -503,7 +511,9 @@ Don't default to all-recall or all-applied. Unless the user specifies otherwise:
    one clause, it's a weak distractor — replace it. Never include a "joke" or
    obviously-absurd option; every option should be something a half-prepared
    student would plausibly pick.
-4. **Always 4-option multiple choice, mostly with exactly 1 correct** (see
+4. **MC questions: 4 options, mostly with exactly 1 correct** (input
+   questions in a mixed set skip this step; see
+   "Learning page" for their fields; see
    Hard rules for the mix and the stem grammar). If the source's own example
    questions use another format (open, true/false), rewrite them into this
    format and mention that in the reply. The archetype templates show one
@@ -516,33 +526,11 @@ Don't default to all-recall or all-applied. Unless the user specifies otherwise:
    Before delivering, scan the set for any who/when/source-citation question
    ("Von wem stammt …", "Wer …", "Welches Jahr …") and replace it with a
    question about the concept itself.
-5. **Give every question a detailed explanation** (the user wants to learn
-   from the answer box, not only check it). Three parts, separated by `<br>`
-   in the HTML quiz:
-   - **Lösung:** why the correct option(s) are right, citing the specific
-     source fact (slide number, summary section, notes), quoted where possible;
-   - **Die anderen:** *every* wrong option, named by a short quote of its text,
-     with the nameable reason it is wrong (which neighbouring concept it
-     really describes, what it inverts, that it is not in the source);
-   - optional **Merke:** / **Logik:** – one-line takeaway, mnemonic or the
-     reasoning behind an order/mapping.
-   Typically 3–6 sentences. Don't label the parts „Richtig:“/„Falsch:“ – the
-   quiz's result line already says „Richtig.“/„Falsch.“, and „Falsch. …
-   Richtig: …“ reads confusingly.
-
-   Example (2 correct):
-   > `<b>Lösung:</b> Verifikation prüft gegen die Spezifikation – die ist
-   > erfüllt, also ist die Software verifiziert. Validierung prüft die Eignung
-   > für den Einsatzzweck (Folie 74) – die fehlt.<br><b>Die anderen:</b>
-   > „validiert, weil die Tests bestanden sind“ verwechselt die Begriffe;
-   > „Verifikation hätte den Fehler sicher gefunden“ – unmöglich, was nicht in
-   > der Spezifikation steht, kann eine Prüfung gegen sie nicht vermissen.<br>
-   > <b>Merke:</b> Korrekt nach Spezifikation kann trotzdem unbrauchbar sein.`
-6. **Check every question before building**: re-read stem, options and key
-   against the source. Replace an option that is only "arguably" right or
-   wrong (e.g. it also partly fits the neighbouring definition) with one that
-   is unambiguous, and say in the reply which questions you changed.
-7. **If a fact needed to make a good question isn't actually in the source
+5. **Give a one- or two-sentence justification per question**, citing the
+   specific source fact, and — for wrong options where it adds value — a short
+   note on *why* that option is wrong. Keep this compact; it's a check for the
+   user, not a re-teaching of the topic.
+6. **If a fact needed to make a good question isn't actually in the source
    material**, say so rather than inventing exam-sounding content that isn't
    backed by the document — flag it as general knowledge, the same way you would
    in a normal answer.
@@ -568,25 +556,6 @@ When the user wants a summary alongside (or before) the questions:
   an "Abgrenzungen" table and self-check questions at the end).
 - **Mark anything not on the slides** as an addition (ERGÄNZUNG) so the user
   knows what to double-check.
-- **Resolve open points with the user before the summary is final – never
-  leave them in the document.** No "Zum Review" / "offene Punkte" boxes or
-  chapters in the summary; its purpose is that the user has settled them
-  first. While reading, collect everything only the user can answer:
-  unexplained symbols or labels on slides (stars, speech bubbles), wording
-  that only makes sense with what was said in the lecture, illegible or
-  ambiguous handwriting, notes whose connection is unclear, gaps in the slide
-  numbering (missing slides?), contradictions between sources or with common
-  textbook usage (which version counts for the exam?). Then ask with
-  **AskUserQuestion** (up to 4 questions per call, several calls if needed;
-  per question 2–4 concrete options such as „Deutung übernehmen (als
-  Ergänzung markiert)“, „Weglassen“, „Beide Fassungen nennen“ – the user's own
-  answer goes into "Other"). Write the answers in: what the user confirms
-  becomes normal content (source „laut Vorlesung“), what stays unknown is
-  dropped or – if needed for understanding – stated neutrally in one
-  sentence. Don't ask about things you can check yourself (e.g. whether the
-  slide really lists the same point twice) – state them plainly. Ask before
-  rendering the PDF; if the user wants to see a draft first, ask right after
-  the draft and update it.
 - Produce the PDF by writing HTML + print CSS and rendering it with a headless
   browser (`google-chrome-stable --headless --no-pdf-header-footer
   --print-to-pdf=out.pdf file.html`) or WeasyPrint if installed. Look at a page
@@ -675,12 +644,15 @@ double-click), saved next to the source material with a distinct name such as
   ];
   ```
   `t` topic, `y` archetype R1–R6/A1–A6/C1, `o` exactly 4 options, `c` sorted array of
-  correct indices, `e` explanation (HTML; Lösung / Die anderen / Merke, see workflow step 5), `id` unique, optional `code` (shown as a
+  correct indices, `e` explanation, `id` unique, optional `code` (shown as a
   code block under the stem), optional `x:1` = extended-mode question. The
   correct-count mix (≈55/30/15) applies to the core set on its own.
 - Build + validate in one step:
   `node scripts/build_quiz.js questions.js quiz-template.html out.html`.
-  It refuses to build (exit 1, lists problems) on: ≠4 options, `c` not 1–4
+  Flags: `--mix` enforces the correct-count mix below (only for courses whose
+  real exams show it), `--link` requires a `ref` on every question (learning
+  page). Input questions (`kind`) skip all MC rules; they need `a`, `e` and
+  (with `--link`) `ref`. It refuses to build (exit 1, lists problems) on: ≠4 options, `c` not 1–4
   valid indices, a core set (≥ 20) with under 45 % single-answer questions or
   over 25 % three/four-correct, all-four-correct more than once per 30, the
   correct option being the longest in over 40 % of single-answer questions
@@ -704,6 +676,55 @@ double-click), saved next to the source material with a distinct name such as
   (`google-chrome-stable --headless --dump-dom` with a small test script that
   writes PASS/FAIL into a `data-log` attribute) and take one screenshot
   (`--screenshot`) to check it renders before handing it over.
+
+## Learning page (summary + connected quiz)
+
+Built only when the user chooses it (step 0). One self-contained HTML file:
+left tabs „📖 Zusammenfassung“ / „✎ Probetest“, the summary is the default
+view and must stay readable on its own. Made for the Diskrete-Mathematik
+course (`Claude/sources/`, `DM_Lernseite.html`); the bundled files are the
+generic version.
+
+- **Sources:** the summary's print HTML stays the single source (same file
+  renders the PDF). Number h2/h3 headings („2.3 Mengenoperationen“); give
+  extra headings an `id="s-…"` to link to them. Exercises:
+  `<div class="aufg"><div class="q">full task text</div><div class="a">solution</div></div>`;
+  theory questions: `<div class="tq"><div class="tq-q">…</div><div class="tq-a">…</div></div>`.
+  Every exercise shows its **full task text** (standalone, no sheet needed).
+- **Questions file** (`const QUESTIONS = [...]`), mixed format:
+  ```js
+  {id:1,t:'Logik',y:'A3',q:'Welche Formel/n ist/sind eine Tautologie?',o:['p ∨ ¬p','p ∧ ¬p','(p ∧ q) ⇒ p','p ⇒ q'],c:[0,2],e:'…',ref:'1.5'},
+  {id:2,t:'Mengenlehre',kind:'num',q:'Wie viele Elemente hat ℘({1, 2, 3, 22, 42})?',a:['32'],show:'32 (= 2⁵)',e:'|℘(M)| = 2^|M|',ref:'2.8'},
+  {id:3,t:'Zahlen',kind:'text',q:'650₈ ins Hexadezimalsystem?',unit:'₁₆',a:['1a8','0x1a8'],show:'1A8₁₆',e:'…',ref:'3.17'},
+  {id:4,t:'Mengenlehre',kind:'set',q:'A ∪ D?',a:['{1, 2, 3, 5, 42}'],show:'{1, 2, 3, 5, 42}',e:'…',ref:'2.3'},
+  ```
+  `num`: compared numerically · `text`: compared after normalising (case,
+  spaces, subscripts like ₁₆, unicode minus, ·/×) · `set`: order and
+  duplicates ignored. `a` lists every accepted spelling, `show` is the
+  displayed solution. `ref` = section number; the solution box gets
+  „📖 Im Skript nachlesen“ (primary button when wrong) and a „← zurück zum
+  Probetest“ button. Optional `code`, `unit`, `demo:true`.
+- **Build:** `node scripts/build_quiz.js --link questions.js assets/quiz-template.html /tmp/check.html`
+  (validation only), then
+  `python3 scripts/build_lernseite.py --summary <summary.html> --questions questions.js --template assets/lernseite-template.html --out <Kurs>_Lernseite.html --title "<Kurs>" --sub "<Semester>" --key <kurs>-lernseite-v1`.
+  It scopes the summary CSS under `.doc`, adds heading ids, writes the TOC
+  statically, wraps solutions in `<details>` with a note field, and warns on
+  duplicate ids or refs without a section. Rebuild after every summary change.
+- **Must hold (tested):** one file, no external requests (works when sent
+  alone); works **without JavaScript** (file previews: Finder spacebar, phone
+  Files app) – static TOC, native `<details>` solutions, JS-only controls
+  hidden, `<noscript>` note that the quiz needs a real browser; phone layout
+  with a top bar and „☰ Inhalt“ drawer; state in `localStorage`
+  (try/catch). Strict CSP works: `default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:`.
+- **Test** with Playwright (WebKit desktop + iPhone, Chromium, JS off): reveal,
+  TOC jump, drawer, input answer, wrong marking, ref jump + back. Use the
+  Playwright version that matches the cached browsers: `npx playwright
+  install` from another version **deletes** the other versions' browsers in
+  `~/Library/Caches/ms-playwright` (incl. the headless shell used for PDFs).
+- The standalone `assets/quiz-template.html` is MC only. A mixed set without a
+  summary: use the learning page, or port the input functions (`isInput`,
+  `norm`, `checkInput`, input branch of `renderCard`) from
+  `assets/lernseite-template.html`.
 
 ## Scaling to new documents
 
