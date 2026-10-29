@@ -50,6 +50,8 @@ Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: kee
 ## Skills
 - Skills live in `~/.claude/skills/` and are synced between devices over the public GitHub repo `lerchenflo/claudeskills` (local clone `~/.claude/skills-repo`, grouped as `<group>/<skill>/`).
 - After creating or changing a skill, copy the updated skill folder to its group folder in `~/.claude/skills-repo` (new skill: pick a fitting group and add it to the skill list in the repo README), then `git pull --rebase`, commit and push.
+- Then run `bash ~/.claude/skills/claude-setup/local-only-skills.sh`. If it lists skills (local skills that are not in the repo yet), ask the user with AskUserQuestion (multiSelect) which of them to upload too. Upload the chosen ones the same way; write the names the user keeps local into `~/.claude/state/skills-local-only` (one per line) so they are not offered again.
+- Never overwrite or delete an existing skill in `~/.claude/skills/` with a repo version without asking the user. Merging (keep every rule from both) is fine; replacing is not.
 - Write skills in English by default (SKILL.md, scripts, code comments, templates, file names), even when the user writes in another language. Only content that must be in another language stays in it (quoted exam examples, UI labels of a course in that language); say so in the skill.
 - Project-specific skills (named after or only useful for one project) stay in that project's `.claude/skills/`, never in `~/.claude/skills/` or the repo.
 - A SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) pulls new skill versions from GitHub. If it reports a conflict (the skill was changed both here and on another device), do not overwrite blindly: merge both versions (keep every rule from both, newest wording wins on conflicts), write the merged result to both places, push, and tell the user what was merged.
@@ -97,17 +99,17 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 }
 ```
 
-For `hooks`, append the entry to any existing `SessionStart` list and never add it twice; an existing entry with an older matcher (e.g. only `startup`) gets this one. `startup|resume` because a resumed session (`claude --resume` / `--continue`) is a restart too, and the hook would never run on devices that always resume. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/`. It never overwrites a local copy that has its own changes; those are printed as conflicts into the session for Claude to merge. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
+For `hooks`, append the entry to any existing `SessionStart` list and never add it twice; an existing entry with an older matcher (e.g. only `startup`) gets this one. `startup|resume` because a resumed session (`claude --resume` / `--continue`) is a restart too, and the hook would never run on devices that always resume. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/`. It never overwrites a local copy that has its own changes or a local skill that was never synced; those are printed as conflicts into the session for Claude to merge. A skill deleted or renamed in the repo is removed locally only while the local copy still equals the last synced version. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
 
 `attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub - this section is their only source.
 
 ## 4. Skills from GitHub
 
 1. Make sure `~/.claude/skills-repo` is up to date (step 0). Pushing needs the user's GitHub login on this device (`gh auth login` or an SSH key); if a push fails, tell the user how to log in.
-2. The repo groups skills as `<group>/<skill>/`; locally they are flat as `~/.claude/skills/<skill>/`. Compare each skill:
-   - only in the repo: copy it into `~/.claude/skills/`;
-   - only local: if it is project-specific, tell the user it belongs in that project's `.claude/skills/` and leave it; otherwise copy it into a fitting group folder in the repo and add it to the README skill list;
-   - in both but different: merge as described in the Skills rules above.
+2. The repo groups skills as `<group>/<skill>/`; locally they are flat as `~/.claude/skills/<skill>/`. Never overwrite or delete a skill that already exists in `~/.claude/skills/`. Compare each skill:
+   - only in the repo: copy it into `~/.claude/skills/` (nothing local is touched);
+   - in both but different: never replace the local copy with the repo version; merge as described in the Skills rules above (keeps every rule from both) and show the user what changed;
+   - only local: list them with `bash ~/.claude/skills/claude-setup/local-only-skills.sh` and ask the user (AskUserQuestion, multiSelect) which to upload; never upload without asking. Project-specific skills: say they belong in that project's `.claude/skills/`. Copy the chosen ones into a fitting group folder in the repo and add them to the README skill list; write the others into `~/.claude/state/skills-local-only` (one name per line) so they are not offered again.
 3. If the repo changed, show the user `git -C ~/.claude/skills-repo status --short`, then commit and push once they agree.
 4. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force` once. It records the synced commit, so from then on the hook only installs what changes on GitHub.
 
