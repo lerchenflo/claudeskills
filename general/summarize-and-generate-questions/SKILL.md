@@ -24,6 +24,10 @@ harder to answer by pattern-matching the slide text.
 
 ## Hard rules (always apply)
 
+- **Correctness has top priority – above speed, length and design.** The user
+  learns from these files, so every statement in a summary, solution or
+  question must be correct in content and in context. Follow "Correctness
+  check" before anything is handed over; when in doubt, ask (never assume).
 - **Ask the format when a new quiz is created: „Multiple Choice only“ or
   „gemischt“ (MC + input questions).** MC-only came from the first course (SE),
   it is not a global rule. Mixed: simple calculations and short exact answers
@@ -546,7 +550,10 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
    `<Course>_Summary_Draft.pdf` into the course folder (name it in the
    material's language, e.g. `<Kurs>_Zusammenfassung_Entwurf.pdf`), look at a few
    pages, re-run `extract_texts.py`.
-6. **Stop for review.** Report what was indexed, transcribed and summarized,
+6. **Correctness check** (see "Correctness check", top priority): every
+   statement sourced and correct in the lecture's context, every calculation
+   recomputed, drawings checked, a separate review pass done.
+7. **Stop for review.** Report what was indexed, transcribed and summarized,
    and ask the open questions with AskUserQuestion. Exam questions come only
    after the user reviewed the summary (then continue with "Workflow" step 0).
 
@@ -634,6 +641,39 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
    material**, say so rather than inventing exam-sounding content that isn't
    backed by the document — flag it as general knowledge, the same way you would
    in a normal answer.
+
+## Correctness check (top priority)
+
+Run this on every summary, transcription, solution and question set before
+handing it over. Nothing counts as done until it passes.
+
+1. **Every statement has a source.** Each fact traces back to a page of the
+   material (`<span class="src">S. 12</span>` in the summary). No content from
+   general knowledge without marking it as an addition (`.alarm.added`, logged
+   in `TO_VERIFY.md`).
+2. **Correct in context, not just in general.** Use the lecture's own
+   definitions, notation and conventions (does ℕ include 0? truth-table row
+   order? which symbol for "exactly one"?), even where a textbook or the
+   internet says otherwise. If the lecture differs from the common standard,
+   keep the lecture's version and add a note; if the lecture itself looks
+   wrong, keep it, mark `[CHECK]` and ask. Keep every condition and qualifier
+   ("only for finite sets", "if gcd = 1", "in ℤ/nℤ"); never generalize a
+   statement beyond the scope the source gives it, and never move content into
+   a section or topic where it does not hold.
+3. **Compute, don't trust.** Recalculate every worked example, exercise
+   solution, table, conversion and formula with code (Python) – including the
+   user's and classmates' solutions. A wrong class solution is shown as a slip
+   (`.alarm.slip`), never fixed silently.
+4. **Drawings match the content.** Check every diagram against its text: shaded
+   Venn regions, axis labels, table values, arrows.
+5. **Sources agree.** Cross-check with every other source in the folder
+   (script, notes, classmates, solutions). Conflicts and single unclear sources
+   go to the user (never assume).
+6. **Separate review pass.** After writing, re-read the finished output section
+   by section against the text extracts, claim by claim, as if someone else
+   wrote it. Fix what is wrong, then check the fixes the same way.
+7. **Report honestly.** The reply says what was verified and how (recomputed,
+   cross-checked with N sources), and lists what is still unverified or open.
 
 ## Summarizing the material first
 
