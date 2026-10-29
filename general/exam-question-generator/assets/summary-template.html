@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>__TITLE__ – Zusammenfassung</title>
+<!--
+  Generic summary source (print PDF + input for build_lernseite.py).
+  Keep the CSS flat (no @media / nested rules): build_lernseite.py scopes every rule under .doc.
+
+  Calm boxes (normal content):   .box.def  .box.merk  .box.fs  .box.info  .box.ueb
+  ALARM boxes (must stand out):  .alarm.missing  – content missing / unclear, still needs input
+                                 .alarm.added    – Claude added, interpreted or assumed something
+                                 .alarm.exam     – ★ Prüfungsrelevant (asked in the exam for sure)
+                                 .alarm.slip     – exercise solved wrongly in class
+  Use alarms only where they apply, never on clear content, so they keep their effect.
+  Inline: <span class="flag missing">FEHLT</span> · <span class="flag added">ERGÄNZUNG</span> ·
+          <span class="flag exam">★ PRÜFUNG</span> · <mark class="hl">wichtig</mark>
+-->
+<style>
+@page { size: A4; margin: 18mm 17mm 20mm 17mm; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
+body { font-family: "Helvetica Neue", Helvetica, Arial, "Arial Unicode MS", sans-serif; font-size: 10.6pt; line-height: 1.62; color: #1a1a1a; margin: 0; }
+h1 { font-size: 22pt; margin: 0 0 10px; }
+h2 { font-size: 16pt; margin: 0 0 18px; padding: 9px 14px; background: #1a365d; color: #fff; border-radius: 5px; break-before: page; }
+h3 { font-size: 12.6pt; margin: 34px 0 12px; padding-bottom: 4px; border-bottom: 1.5px solid #cbd5e0; break-after: avoid; }
+h4 { font-size: 11pt; margin: 22px 0 8px; break-after: avoid; }
+p { margin: 9px 0; }
+ul, ol { margin: 8px 0 8px 22px; padding: 0; }
+li { margin: 5px 0; }
+table { border-collapse: collapse; margin: 12px 0; }
+th, td { border: 1px solid #a0aec0; padding: 4px 10px; text-align: left; vertical-align: top; }
+th { background: #edf2f7; }
+code, pre { font-family: Menlo, Monaco, "Courier New", monospace; font-size: 9.4pt; }
+pre { background: #f1f1f1; padding: 10px 14px; border-radius: 4px; white-space: pre-wrap; break-inside: avoid; }
+.src { color: #718096; font-size: 8.8pt; white-space: nowrap; }
+.cover { border: 2px solid #1a365d; border-radius: 8px; padding: 14px 18px; margin: 16px 0; }
+
+.box { border: 1.5px solid; border-radius: 6px; padding: 11px 15px 12px; margin: 16px 0; break-inside: avoid; }
+.box .lbl { font-size: 8.4pt; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; margin-bottom: 7px; }
+.box > *:last-child { margin-bottom: 0; }
+.def  { border-color: #2b6cb0; background: #ebf4ff; } .def .lbl { color: #2b6cb0; }
+.merk { border-color: #2f855a; background: #f0fff4; } .merk .lbl { color: #2f855a; }
+.fs   { border-color: #6b46c1; background: #faf5ff; } .fs .lbl { color: #6b46c1; }
+.info { border-color: #a0aec0; background: #f7fafc; } .info .lbl { color: #4a5568; }
+.ueb  { border-color: #718096; background: #fff; } .ueb .lbl { color: #4a5568; }
+
+.alarm { border: 4px solid; border-radius: 6px; margin: 20px 0; break-inside: avoid; overflow: hidden; }
+.alarm .lbl { display: block; padding: 7px 14px; color: #fff; font-size: 10pt; font-weight: 900; letter-spacing: .8px; text-transform: uppercase; }
+.alarm .body { padding: 10px 15px 12px; }
+.alarm .body > *:first-child { margin-top: 0; } .alarm .body > *:last-child { margin-bottom: 0; }
+.alarm.missing { border-color: #c53030; background: #fed7d7; } .alarm.missing .lbl { background: #c53030; }
+.alarm.added   { border-color: #c05621; background: #feebc8; } .alarm.added .lbl   { background: #c05621; }
+.alarm.exam    { border-color: #97266d; background: #fed7e2; } .alarm.exam .lbl    { background: #97266d; }
+.alarm.slip    { border-color: #975a16; background: #fefcbf; } .alarm.slip .lbl    { background: #975a16; }
+
+.flag { display: inline-block; padding: 0 6px; border-radius: 3px; color: #fff; font-size: 8.6pt; font-weight: 900; letter-spacing: .4px; text-transform: uppercase; vertical-align: 1px; }
+.flag.missing { background: #c53030; } .flag.added { background: #c05621; } .flag.exam { background: #97266d; } .flag.slip { background: #975a16; }
+.hl { background: #fde047; color: #1a1a1a; font-weight: 700; padding: 0 2px; }
+
+.aufg { margin: 20px 0; border: 1.5px solid #718096; border-radius: 6px; overflow: hidden; break-inside: avoid; }
+.aufg .q { background: #edf2f7; padding: 9px 14px; border-bottom: 1px solid #cbd5e0; }
+.aufg .a { padding: 8px 14px 12px; }
+.tq { margin: 14px 0; break-inside: avoid; }
+.tq-q { font-weight: 700; }
+.tq-a { margin: 4px 0 0 18px; }
+</style>
+</head>
+<body>
+<h1>__TITLE__</h1>
+<p class="src">__SUB__</p>
+
+<div class="cover">
+  <b>Inhalt:</b> 1 Erstes Thema · 2 Zweites Thema
+</div>
+
+<!-- Overview of every open point at the top, so classmates see at once what is missing -->
+<div class="alarm missing"><span class="lbl">⚠ Fehlt noch – bitte nachliefern</span><div class="body">
+  <ul><li>#1 S. 12: Beispiel an der Tafel fehlt in den Notizen.</li></ul>
+</div></div>
+
+<h2>1 Erstes Thema</h2>
+<h3>1.1 Abschnitt</h3>
+
+<div class="box def"><div class="lbl">Definition</div>…</div>
+<div class="box merk"><div class="lbl">Merksatz</div>…</div>
+<div class="box fs"><div class="lbl">Auf der Formelsammlung</div>…</div>
+
+<div class="alarm exam"><span class="lbl">★ Prüfungsrelevant</span><div class="body">…</div></div>
+<div class="alarm missing"><span class="lbl">⚠ Fehlt / unklar #1</span><div class="body">…</div></div>
+<div class="alarm added"><span class="lbl">✎ Ergänzung von Claude – nachprüfen</span><div class="body">…</div></div>
+
+<p>Fließtext mit <mark class="hl">wichtigem Begriff</mark> und <span class="flag missing">fehlt</span> an einer Lücke.</p>
+
+<div class="aufg"><div class="q"><b>Aufgabe 1.</b> Voller Aufgabentext …</div>
+  <div class="a">Lösung …
+    <div class="alarm slip"><span class="lbl">In der Übung so gelöst – laut Claude falsch</span><div class="body">… richtig: …</div></div>
+  </div></div>
+
+<div class="tq"><div class="tq-q">Theoriefrage …?</div><div class="tq-a">Antwort …</div></div>
+</body>
+</html>
