@@ -15,7 +15,7 @@ Exam preparation folder. Keep this file updated whenever the user states a new p
 - Summary: loud alarm boxes only where something is missing, added by Claude, exam-relevant or solved wrongly in class – never on clear content. Generous spacing, bullet lists instead of long one-liners. Exercises always show the full task text plus the solution.
 - New info: update transcription, `OPEN_QUESTIONS.md`, `TO_VERIFY.md` and the summary source right away; rebuild the PDF only when the user asks.
 - Work order: 1) extract all text (incl. handwriting) and write the summary, 2) the user reviews it, 3) only then generate exam questions.
-- Material language: __LANG__ (summaries and transcriptions in this language).
+- Material language: __LANG__ (summaries, transcriptions and quiz questions in this language). Chat replies, progress lines and interview questions stay in English.
 
 ## Exam facts (from the user)
 
