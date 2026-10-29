@@ -721,6 +721,12 @@ generic version.
   | `kind:'clock'`, `clock:{n:12, from?:9}` | tap a number on a mod-n dial | `['2']` |
   | `kind:'bits'`, `bits:8` | bit row with place values 2⁷ … 2⁰, tap to flip | `['00010111']` |
 
+  **Many variants (extended mode, mock exams): generate them with a small
+  Python script that computes every answer** (truth-table columns, Venn region
+  codes, conversions, mod, ggT, inverses) and writes a marked block
+  (`// <<GEN-START>>` … `// <<GEN-END>>`) into the questions file – no typed
+  answers, no typos; re-run instead of hand-editing. Example: the course's
+  `Claude/tools/quiz_variants.py` (Diskrete Mathematik).
   Widgets need `show` (solution text). `kind:'set'` accepts nested sets and
   tuples (`{∅, {1}}`, `{(a, 1), (b, 2)}`). Every question with `ref` shows
   „📖 Erst im Skript nachlesen“ before answering (jumps to the section, „←
