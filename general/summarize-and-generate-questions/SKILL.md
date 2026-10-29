@@ -171,6 +171,35 @@ read them (or their text extract) first, tabulate correct-count mix, stem
 forms, option length and archetypes, and follow them wherever they differ from
 the defaults here. Say in the reply what you calibrated on.
 
+### Old tests from the same lecture steer the question set
+
+When old tests, exams, mock exams or quizzes **from the same lecture** exist
+(same course, ideally same lecturer – ask which ones count, never assume),
+the generated questions follow them. They show what this lecturer actually
+asks, which beats any default here.
+
+1. **Transcribe every old test completely** (task text, points, sub-tasks,
+   given solutions or marks) into `<work>/text/`. Photos and scans too.
+2. **Analyse them** into `<work>/text/exam_analysis.md`: which topics come up
+   (and how often, with points), which task types (calculate, convert,
+   define, explain, prove, read or write code, draw, multiple choice), how
+   tasks are phrased, which tasks recur across tests, difficulty, length and
+   structure (number of tasks, sub-questions, points, time).
+3. **Weight the set like the tests:** topic shares follow the points/frequency
+   in the old tests, and most questions use the old tests' task types and
+   phrasing. Every recurring task gets several variants with new values
+   (computed, see "Correctness check"). Topics never asked in an old test
+   still get questions, but fewer – unless they are marked exam-relevant (★).
+4. **Mock exams copy the real structure:** same number of tasks, sub-question
+   types, point split and order as the old tests. Include the original old
+   tasks as their own block; their solutions are recomputed or, if missing,
+   solved by Claude, marked as such and checked.
+5. **Summary:** mark the sections that old tests asked about (e.g. a small
+   flag „in old test 2024, task 3“ in the material's language), so the user
+   sees what to learn first.
+6. **Say it in the reply:** which tests were used, the topic/type weights
+   taken from them, and where the set deviates and why.
+
 ## Two families of archetypes
 
 A good practice set needs both families below. **Recall archetypes** ask "what
@@ -496,7 +525,8 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
 1. **Inventory.** List every file (`find . -type f`, skip `.DS_Store`, hidden
    and system folders). Group them: lecture script/slides, exercise sheets,
    own solutions, handwritten notes (`.xopp`, scans, photos), formula sheets,
-   old exams/quizzes, textbooks, classmates' material, other. `<work>` =
+   old exams/quizzes (look for folders like `Old Test`, `Altklausuren`,
+   `Probeklausur`), textbooks, classmates' material, other. `<work>` =
    `Claude/` unless the folder already has `06_Claude/` or `Claude/`.
 2. **Extract all text once** (workflow step 00): copy
    `scripts/extract_texts.py` to `<work>/tools/`, run it (`--out <work>`).
@@ -528,6 +558,8 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
      everything“; a page or paragraph limit can be typed in „Other“.
    - Exam format (written with sub-questions / multiple choice / mixed /
      unknown) and allowed aids (formula sheet found in the folder?).
+   - Which old tests come from the same lecture (and lecturer)? They steer
+     the questions (see "Old tests from the same lecture").
    - Files that are only reference (textbook) or must not be used
      (AI-generated, other course, outdated version).
    - Material language if not obvious.
@@ -593,7 +625,9 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
    written against both the slides and the summary.
 
 1. **Read the whole source text first**, and any real exams/quizzes in the
-   folder (calibrate on them, see "What the real exams look like"). Note each
+   folder – old tests from the same lecture set the topic weights, task types
+   and phrasing (see "Old tests from the same lecture") and calibrate the
+   MC style (see "What the real exams look like"). Note each
    deck's central message. Don't generate questions paragraph-by-paragraph —
    skim for the material that supports each archetype:
    - Bulleted lists of items under one category → R1, and if the list has an
