@@ -10,7 +10,10 @@ Two jobs: **set up and summarize a course folder** (see "Course setup") and
 start with the course setup.
 
 **Language:** this skill is written in English. Write summaries,
-transcriptions and questions in the material's language. German quotes below
+transcriptions and questions in the material's language. Chat with the user
+(replies, progress lines, AskUserQuestion questions) stays in the user's
+reply language from the global CLAUDE.md (English) – never switch to the
+material's language because the files are German. German quotes below
 (exam stems like „Welche Aussage/n …“, UI labels like „Lösung zeigen“) come
 from the German course the skill was calibrated on and from the German page
 templates; for another language, translate the labels and follow that
