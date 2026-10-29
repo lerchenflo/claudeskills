@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="__LANG__">
 <head>
 <meta charset="utf-8">
-<title>__TITLE__ – Zusammenfassung</title>
+<title>__TITLE__ – Summary</title>
 <!--
   Generic summary source (print PDF + input for build_lernseite.py).
   Keep the CSS flat (no @media / nested rules): build_lernseite.py scopes every rule under .doc.
@@ -13,8 +13,10 @@
                                  .alarm.exam     – ★ Prüfungsrelevant (asked in the exam for sure)
                                  .alarm.slip     – exercise solved wrongly in class
   Use alarms only where they apply, never on clear content, so they keep their effect.
-  Inline: <span class="flag missing">FEHLT</span> · <span class="flag added">ERGÄNZUNG</span> ·
-          <span class="flag exam">★ PRÜFUNG</span> · <mark class="hl">wichtig</mark>
+  Write labels and text in the material's language (German example: „Fehlt noch – bitte nachliefern“,
+  „Definition“, „Merksatz“, „Auf der Formelsammlung“, „★ Prüfungsrelevant“, „Ergänzung von Claude – nachprüfen“).
+  Inline: <span class="flag missing">MISSING</span> · <span class="flag added">ADDITION</span> ·
+          <span class="flag exam">★ EXAM</span> · <mark class="hl">important</mark>
 -->
 <style>
 @page { size: A4; margin: 18mm 17mm 20mm 17mm; }
@@ -70,32 +72,32 @@ pre { background: #f1f1f1; padding: 10px 14px; border-radius: 4px; white-space: 
 <p class="src">__SUB__</p>
 
 <div class="cover">
-  <b>Inhalt:</b> 1 Erstes Thema · 2 Zweites Thema
+  <b>Contents:</b> 1 First topic · 2 Second topic
 </div>
 
 <!-- Overview of every open point at the top, so classmates see at once what is missing -->
-<div class="alarm missing"><span class="lbl">⚠ Fehlt noch – bitte nachliefern</span><div class="body">
-  <ul><li>#1 S. 12: Beispiel an der Tafel fehlt in den Notizen.</li></ul>
+<div class="alarm missing"><span class="lbl">⚠ Still missing – please send</span><div class="body">
+  <ul><li>#1 p. 12: example from the board is missing in the notes.</li></ul>
 </div></div>
 
-<h2>1 Erstes Thema</h2>
-<h3>1.1 Abschnitt</h3>
+<h2>1 First topic</h2>
+<h3>1.1 Section</h3>
 
 <div class="box def"><div class="lbl">Definition</div>…</div>
-<div class="box merk"><div class="lbl">Merksatz</div>…</div>
-<div class="box fs"><div class="lbl">Auf der Formelsammlung</div>…</div>
+<div class="box merk"><div class="lbl">Key point</div>…</div>
+<div class="box fs"><div class="lbl">On the formula sheet</div>…</div>
 
-<div class="alarm exam"><span class="lbl">★ Prüfungsrelevant</span><div class="body">…</div></div>
-<div class="alarm missing"><span class="lbl">⚠ Fehlt / unklar #1</span><div class="body">…</div></div>
-<div class="alarm added"><span class="lbl">✎ Ergänzung von Claude – nachprüfen</span><div class="body">…</div></div>
+<div class="alarm exam"><span class="lbl">★ Exam-relevant</span><div class="body">…</div></div>
+<div class="alarm missing"><span class="lbl">⚠ Missing / unclear #1</span><div class="body">…</div></div>
+<div class="alarm added"><span class="lbl">✎ Added by Claude – please verify</span><div class="body">…</div></div>
 
-<p>Fließtext mit <mark class="hl">wichtigem Begriff</mark> und <span class="flag missing">fehlt</span> an einer Lücke.</p>
+<p>Body text with an <mark class="hl">important term</mark> and <span class="flag missing">missing</span> at a gap.</p>
 
-<div class="aufg"><div class="q"><b>Aufgabe 1.</b> Voller Aufgabentext …</div>
-  <div class="a">Lösung …
-    <div class="alarm slip"><span class="lbl">In der Übung so gelöst – laut Claude falsch</span><div class="body">… richtig: …</div></div>
+<div class="aufg"><div class="q"><b>Exercise 1.</b> Full task text …</div>
+  <div class="a">Solution …
+    <div class="alarm slip"><span class="lbl">Solved like this in class – wrong according to Claude</span><div class="body">… correct: …</div></div>
   </div></div>
 
-<div class="tq"><div class="tq-q">Theoriefrage …?</div><div class="tq-a">Antwort …</div></div>
+<div class="tq"><div class="tq-q">Theory question …?</div><div class="tq-a">Answer …</div></div>
 </body>
 </html>

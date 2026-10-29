@@ -50,6 +50,7 @@ Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: kee
 ## Skills
 - Skills live in `~/.claude/skills/` and are synced between devices over the public GitHub repo `lerchenflo/claudeskills` (local clone `~/.claude/skills-repo`, grouped as `<group>/<skill>/`).
 - After creating or changing a skill, copy the updated skill folder to its group folder in `~/.claude/skills-repo` (new skill: pick a fitting group and add it to the skill list in the repo README), then `git pull --rebase`, commit and push.
+- Write skills in English by default (SKILL.md, scripts, code comments, templates, file names), even when the user writes in another language. Only content that must be in another language stays in it (quoted exam examples, UI labels of a course in that language); say so in the skill.
 - Project-specific skills (named after or only useful for one project) stay in that project's `.claude/skills/`, never in `~/.claude/skills/` or the repo.
 - A SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) pulls new skill versions from GitHub. If it reports a conflict (the skill was changed both here and on another device), do not overwrite blindly: merge both versions (keep every rule from both, newest wording wins on conflicts), write the merged result to both places, push, and tell the user what was merged.
 ```

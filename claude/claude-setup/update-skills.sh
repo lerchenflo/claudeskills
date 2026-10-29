@@ -95,13 +95,32 @@ for skill_md in "$tmp"/new/*/*/SKILL.md; do
   fi
 done
 
+# Skills deleted or renamed in the repo: remove the local copy, but only while it still equals the last synced version.
+removed=""
+for skill_md in "$tmp"/old/*/*/SKILL.md; do
+  [ -f "$skill_md" ] || continue
+  old_dir=$(dirname "$skill_md")
+  name=$(basename "$old_dir")
+  case "$name" in '' | . | .. | synced) continue ;; esac
+  ls -d "$tmp"/new/*/"$name" >/dev/null 2>&1 && continue # still in the repo
+  dst="$SKILLS_DIR/$name"
+  [ -e "$dst" ] || continue
+  if same "$dst" "$old_dir"; then
+    rm -rf "$dst" && removed="$removed $name"
+  else
+    conflicts="$conflicts
+  - $dst was removed or renamed in the repo but has local changes (merge them into the renamed skill or keep it)"
+  fi
+done
+
 # Only remember this commit once everything is in place, so open conflicts are reported again next time.
 [ -z "$conflicts" ] && echo "$head" >"$INSTALLED"
 
-if [ -n "$added$updated$conflicts" ]; then
+if [ -n "$added$updated$removed$conflicts" ]; then
   echo "Skills update from GitHub ($(git -C "$REPO_DIR" log -1 --format='%h %s')):"
   [ -n "$added" ] && echo "- installed:$(echo "$added" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
   [ -n "$updated" ] && echo "- updated:$(echo "$updated" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+  [ -n "$removed" ] && echo "- removed (deleted or renamed in the repo):$(echo "$removed" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
   if [ -n "$conflicts" ]; then
     echo "- not overwritten, the local copy has changes that are not in the repo:$conflicts"
     echo "  Merge each pair (keep every rule from both, newest wording wins), write the result to the" \

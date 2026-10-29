@@ -62,7 +62,7 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 
 | Skill | What it does |
 |-------|--------------|
-| `exam-question-generator` | Turns study material (slides, summaries, chapters) into applied multiple-choice exam questions, study-summary PDFs and an interactive HTML practice test. Built and calibrated for the course *Strukturierter Einstieg in die Programmierung*; it works for other courses, but its question style and folder layout target that course. |
+| `summarize-and-generate-questions` | Sets up a course folder (extracts every file, interviews you about the exam scope, writes CLAUDE.md, open-question and to-verify lists, never assumes: needs two sources or asks), summarizes it with loud alarm boxes for missing content, and turns it into applied exam questions, a practice test or a learning page (summary + quiz). Built and calibrated for the course *Strukturierter Einstieg in die Programmierung*; it works for other courses, but its question style and folder layout target that course. |
 | `security-review` | Systematic security code review (injection, XSS, authentication, authorization, cryptography) with confidence-based findings. |
 | `test-driven-development` | Test-first workflow for features and bug fixes: write a failing test, then the code. |
 | `vori-translator` | Translates and reviews Vorarlbergerisch (Vori dialect) string resources (`values-de-rAT/strings.xml`, website texts): fills missing keys, fixes typos, Standard-German leftovers and broken placeholders. |
