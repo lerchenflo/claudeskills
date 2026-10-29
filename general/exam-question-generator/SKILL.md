@@ -560,6 +560,20 @@ When the user wants a summary alongside (or before) the questions:
   an "Abgrenzungen" table and self-check questions at the end).
 - **Mark anything not on the slides** as an addition (ERGÄNZUNG) so the user
   knows what to double-check.
+- **Start from `assets/summary-template.html`** (print CSS, box types, exercise
+  and theory-question markup; replace `__TITLE__`/`__SUB__`). Keep its CSS flat
+  (no `@media`), because `build_lernseite.py` scopes every rule under `.doc`.
+- **Alarm boxes must stand out, not blend in.** The user wants missing and
+  important content loud, not pale tints on white. Use the solid-header alarm
+  boxes (thick border, saturated header bar with white text, tinted body):
+  `.alarm.missing` (red – missing/unclear, still needs input; also an
+  overview box „Fehlt noch“ at the top), `.alarm.added` (orange – Claude
+  added, interpreted or assumed something), `.alarm.exam` (magenta – ★
+  Prüfungsrelevant), `.alarm.slip` (brown – exercise solved wrongly in class).
+  Inline: `<span class="flag missing">FEHLT</span>`, important terms with
+  `<mark class="hl">` (solid yellow, bold). Use alarms only where they apply,
+  never on clear content, so they keep their effect. Normal content uses the
+  calm `.box.def/.merk/.fs/.info` boxes.
 - Produce the PDF by writing HTML + print CSS and rendering it with a headless
   browser (`google-chrome-stable --headless --no-pdf-header-footer
   --print-to-pdf=out.pdf file.html`) or WeasyPrint if installed. Look at a page
@@ -725,8 +739,11 @@ generic version.
   Python script that computes every answer** (truth-table columns, Venn region
   codes, conversions, mod, ggT, inverses) and writes a marked block
   (`// <<GEN-START>>` … `// <<GEN-END>>`) into the questions file – no typed
-  answers, no typos; re-run instead of hand-editing. Example: the course's
-  `Claude/tools/quiz_variants.py` (Diskrete Mathematik).
+  answers, no typos; re-run instead of hand-editing. `scripts/answer_check.py`
+  has the generic helpers (`column`/`equiv`/`tautology`/`true_rows` for logic,
+  `venn_codes`/`fmt_set`/`powerset` for sets, `inverse`/`to_base` for numbers,
+  `write_block` for the GEN block; CLI: `answer_check.py tt "p ∧ q" pq`).
+  Full example: the course's `Claude/tools/quiz_variants.py` (Diskrete Mathematik).
   Widgets need `show` (solution text). `kind:'set'` accepts nested sets and
   tuples (`{∅, {1}}`, `{(a, 1), (b, 2)}`). Every question with `ref` shows
   „📖 Erst im Skript nachlesen“ before answering (jumps to the section, „←
