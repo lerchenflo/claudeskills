@@ -65,6 +65,59 @@ main { overflow-y: auto; padding: 28px 32px 40px; }
 .opts { display: flex; flex-direction: column; gap: 8px; }
 .opt { text-align: left; background: var(--panel); color: var(--text); border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 14px; font: inherit; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
 .opt:hover:not(:disabled) { border-color: var(--accent); }
+.peek { margin-left: 8px; }
+/* answer widgets: Venn diagram, chips, clock, bit row, fill-in grid */
+.wbox { margin: 6px 0 4px; }
+.wbox svg { width: 100%; max-width: 430px; height: auto; display: block; touch-action: manipulation; }
+.wbox.click svg { cursor: pointer; }
+.clockbox svg { max-width: 300px; }
+.whint { font-size: 13px; color: var(--muted); margin: 4px 0 8px; }
+svg .vz-line { fill: none; stroke: var(--text); stroke-width: 1.6; pointer-events: none; }
+svg .vz-u { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+svg .vz-lab { fill: var(--text); font: 700 17px system-ui, sans-serif; text-anchor: middle; pointer-events: none; }
+svg .vz-el { fill: var(--text); font: 600 13.5px system-ui, sans-serif; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 2px; }
+.chip { font: 15px ui-monospace, "DejaVu Sans Mono", monospace; padding: 8px 13px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+.chip.sel { border-color: var(--accent); background: var(--accent-soft); }
+.chip.right { border-color: var(--ok); background: var(--ok-soft); }
+.chip.missed { border: 1.5px dashed var(--ok); }
+.chip.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.chip.off { opacity: .55; }
+.clock .dial { fill: none; stroke: var(--line); stroke-width: 2; }
+.clock .t { cursor: pointer; }
+.clock .t circle { fill: var(--tile); stroke: var(--line); stroke-width: 1.5; }
+.clock .t text, .clock .mid { fill: var(--text); font: 600 14px system-ui, sans-serif; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.clock .mid { fill: var(--muted); font-size: 13px; }
+.clock .t.from circle { stroke: var(--accent); stroke-width: 3; }
+.clock .t.sel circle { fill: var(--accent); } .clock .t.sel text { fill: #fff; }
+.clock .t.right circle { fill: var(--ok); } .clock .t.right text { fill: #fff; }
+.clock .t.wrong circle { fill: var(--bad); } .clock .t.wrong text { fill: #fff; }
+.gridbox { overflow-x: auto; margin: 6px 0 2px; }
+.gridw { border-collapse: collapse; }
+.gridw th, .gridw td { border: 1px solid var(--line); height: 36px; min-width: 40px; text-align: center; padding: 0; white-space: nowrap; }
+.gridw th { background: var(--tile); padding: 2px 9px; font-weight: 700; }
+.gridw th small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+.gridw td.given { padding: 0 9px; }
+.gridw input, .gridw .tg { width: 100%; min-width: 46px; height: 36px; border: 0; margin: 0; background: var(--accent-soft); color: var(--text); font: 600 15px ui-monospace, "DejaVu Sans Mono", monospace; text-align: center; display: block; }
+.gridw .tg { cursor: pointer; }
+.gridw input:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+.gridw td.right, .gridw td.right .tg { background: var(--ok-soft); }
+.gridw td.wrong, .gridw td.wrong .tg { background: var(--bad-soft); }
+.gridw td.right, .gridw td.wrong { padding: 2px 8px; font: 600 15px ui-monospace, "DejaVu Sans Mono", monospace; }
+.gridw .fix { display: block; font-size: 12px; color: var(--ok); }
+.gridw td.wrong .got { text-decoration: line-through; color: var(--bad); }
+/* truth-table questions (q.tt): table with the given columns, answer options as candidate columns */
+.tt-row { display: flex; gap: 12px; align-items: flex-start; margin: 4px 0 6px; overflow-x: auto; padding-bottom: 2px; }
+.tt { border-collapse: collapse; flex: none; font-size: 15px; }
+.tt th, .tt td { height: 32px; min-width: 30px; padding: 0 9px; border: 1px solid var(--line); text-align: center; white-space: nowrap; }
+.tt th { background: var(--tile); font-weight: 700; }
+.tt td.qm { color: var(--accent); font-weight: 700; background: var(--accent-soft); }
+.tt-opts { display: grid; grid-template-columns: repeat(4, minmax(44px, 1fr)); gap: 8px; flex: 1; min-width: 196px; }
+.tt-opts .opt { flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; }
+.tt-opts .opt .k { width: auto; height: 32px; border-radius: 0; }
+.tcol { display: flex; flex-direction: column; }
+.tcol i { font-style: normal; font-weight: 600; height: 33px; line-height: 33px; text-align: center; border-top: 1px solid var(--line); }
+.tcol i.w { color: var(--ok); } .tcol i.f { color: var(--bad); }
 .opt .k { flex: none; width: 24px; height: 24px; border-radius: 5px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
 .opt.sel { border-color: var(--accent); background: var(--accent-soft); }
 .opt.sel .k { background: var(--accent); color: #fff; }
@@ -354,16 +407,197 @@ function norm(x) {
   return String(x).replace(/[₀-₉]+/g, '').normalize('NFKC').toLowerCase()
     .replace(/[−–]/g, '-').replace(/[·×]/g, '*').replace(/\s+/g, '').replace(/\.$/, '');
 }
-function setItems(x) {
-  const n = norm(x).replace(/^\{|\}$/g, '').replace(/^∅$/, '');
-  return n === '' ? [] : [...new Set(n.split(','))].sort();
+// canonical form of a set answer: nested sets {∅, {1}} and tuples (1, 2) allowed; order and duplicates ignored
+function canonSet(x) {
+  let s = norm(x).replace(/∅/g, '{}'), i = 0;
+  if (s[0] !== '{') s = '{' + s + '}';
+  const list = (open, close) => {
+    i++; const els = [];
+    while (i < s.length && s[i] !== close) {
+      const at = i, v = item(); if (v !== '') els.push(v);
+      if (s[i] === ',') i++; else if (i === at) i++;
+    }
+    i++;
+    return open === '{' ? '{' + [...new Set(els)].sort().join(',') + '}' : '(' + els.join(',') + ')';
+  };
+  const item = () => {
+    if (s[i] === '{') return list('{', '}');
+    if (s[i] === '(') return list('(', ')');
+    let t = ''; while (i < s.length && !',})'.includes(s[i])) t += s[i++]; return t;
+  };
+  return item();
 }
 function checkInput(q, ans) {
   if (ans === null || ans === '') return false;
   if (q.kind === 'num') { const v = parseFloat(norm(ans).replace(',', '.')); return q.a.some(x => Math.abs(parseFloat(x) - v) < 1e-9) && /^-?[\d.,]+$/.test(norm(ans)); }
-  if (q.kind === 'set') { const s = setItems(ans).join(','); return q.a.some(x => setItems(x).join(',') === s); }
-  return q.a.some(x => norm(x) === norm(ans));
+  if (WIDGETS[q.kind]) return WIDGETS[q.kind].check(q, ans);
+  if (q.kind === 'set') { const s = canonSet(ans); return q.a.some(x => canonSet(x) === s); }
+  const t = v => norm(v).replace(/[,;]/g, '');   // text: commas/semicolons ignored ("f, w, w, w" = "fwww")
+  return q.a.some(x => t(x) === t(ans));
 }
+// ───── answer widgets (kind: venn, chips, clock, bits, grid) and the Venn diagram for q.venn.sets ─────
+// Every widget keeps its answer as a string in state.sel[i] (like the text inputs), so saving,
+// confirming and „Prüfen“ work unchanged.
+const VENN = {
+  2: { vb: '0 0 400 250', U: [12, 12, 376, 226], c: [[150, 125, 85], [250, 125, 85]], lab: [[92, 48], [308, 48]],
+       at: { '10': [110, 125], '01': [290, 125], '11': [200, 125], '00': [40, 34] } },
+  3: { vb: '0 0 380 290', U: [10, 10, 360, 270], c: [[150, 110, 75], [230, 110, 75], [190, 180, 75]], lab: [[76, 50], [304, 50], [190, 272]],
+       at: { '100': [106, 92], '010': [274, 92], '001': [190, 224], '110': [190, 76], '101': [144, 160], '011': [236, 160], '111': [190, 134], '000': [36, 34] } }
+};
+let vennSeq = 0;
+// names: set names; fills: [[code, colour | 'hatch']]; sets: {A:[…]} elements to draw; U: extra elements outside all sets
+function vennSvg(names, { fills = [], sets = null, U = [] } = {}) {
+  const g = VENN[names.length], [ux, uy, uw, uh] = g.U, P = 'vz' + (++vennSeq);
+  const circ = (k, a) => `<circle cx="${g.c[k][0]}" cy="${g.c[k][1]}" r="${g.c[k][2]}" ${a}/>`;
+  let defs = names.map((n, k) => `<clipPath id="${P}c${k}">${circ(k, '')}</clipPath>`).join('') +
+    `<pattern id="${P}h" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="9" style="fill:var(--ok)"/></pattern>`;
+  const region = (code, fill, n) => {
+    const ex = [...code].flatMap((b, k) => b === '0' ? [k] : []), inc = [...code].flatMap((b, k) => b === '1' ? [k] : []), mid = `${P}m${n}`;
+    if (ex.length) defs += `<mask id="${mid}"><rect x="${ux}" y="${uy}" width="${uw}" height="${uh}" fill="#fff"/>${ex.map(k => circ(k, 'fill="#000"')).join('')}</mask>`;
+    const f = fill === 'hatch' ? `fill:url(#${P}h)` : `fill:${fill};fill-opacity:.5`;
+    let r = `<rect x="${ux}" y="${uy}" width="${uw}" height="${uh}" style="${f}"${ex.length ? ` mask="url(#${mid})"` : ''}/>`;
+    inc.forEach(k => { r = `<g clip-path="url(#${P}c${k})">${r}</g>`; });
+    return r;
+  };
+  const shade = fills.map(([code, fill], n) => region(code, fill, n)).join('');
+  let els = '';
+  if (sets) {
+    const by = {}, all = [...new Set([...names.flatMap(n => sets[n] || []), ...U].map(String))];
+    all.forEach(x => { const code = names.map(n => (sets[n] || []).map(String).includes(x) ? '1' : '0').join(''); (by[code] = by[code] || []).push(x); });
+    Object.entries(by).forEach(([code, xs]) => {
+      const [ax, ay] = g.at[code], out = !code.includes('1'), per = out ? 7 : 3;
+      xs.forEach((x, k) => {
+        const row = Math.floor(k / per), col = k % per, inRow = Math.min(per, xs.length - row * per);
+        const x0 = out ? ax + col * 24 : ax + (col - (inRow - 1) / 2) * 24, y0 = out ? ay + row * 18 : ay + (row - (Math.ceil(xs.length / per) - 1) / 2) * 18;
+        els += `<text class="vz-el" x="${x0}" y="${y0}">${x}</text>`;
+      });
+    });
+  }
+  return `<svg viewBox="${g.vb}" class="venn" role="img"><defs>${defs}</defs>${shade}<rect class="vz-u" x="${ux}" y="${uy}" width="${uw}" height="${uh}" rx="8"/>` +
+    names.map((n, k) => circ(k, 'class="vz-line"')).join('') +
+    names.map((n, k) => `<text class="vz-lab" x="${g.lab[k][0]}" y="${g.lab[k][1]}">${n}</text>`).join('') + els + '</svg>';
+}
+function setSel(i, v) { state.sel[i] = v; updateConfirm(); save(); }
+const listOf = s => (s || '').split(',').filter(Boolean);
+const gridVals = s => { try { const v = JSON.parse(s || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+const cellOk = (want, got) => String(want).split('|').some(x => norm(x) === norm(got || ''));
+const WIDGETS = {
+  venn: {   // shade regions: a = region codes like '110' (in 1st and 2nd set, not in 3rd); '000' = outside
+    check: (q, s) => listOf(s).sort().join() === [...q.a].sort().join(),
+    render(q, i, rev, card) {
+      const names = q.venn.names, g = VENN[names.length], box = document.createElement('div'); box.className = 'wbox' + (rev ? '' : ' click');
+      const draw = () => {
+        let fills;
+        if (rev) { const u = listOf(state.answers[i]); fills = Object.keys(g.at).flatMap(c => q.a.includes(c) ? [[c, u.includes(c) ? 'var(--ok)' : 'hatch']] : u.includes(c) ? [[c, 'var(--bad)']] : []); }
+        else fills = listOf(state.sel[i]).map(c => [c, 'var(--accent)']);
+        box.innerHTML = vennSvg(names, { fills }) + `<div class="whint">${rev ? 'grün = richtig markiert · schraffiert = fehlte · rot = zu viel markiert' : 'Flächen antippen, die zur Menge gehören (nochmal tippen = entfernen). Die Fläche außerhalb der Kreise zählt auch.'}</div>`;
+      };
+      if (!rev) box.addEventListener('click', e => {
+        const svg = box.querySelector('svg'); if (!svg) return;
+        const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+        const p = pt.matrixTransform(svg.getScreenCTM().inverse()), [ux, uy, uw, uh] = g.U;
+        if (p.x < ux || p.y < uy || p.x > ux + uw || p.y > uy + uh) return;
+        const code = g.c.map(([cx, cy, r]) => (p.x - cx) ** 2 + (p.y - cy) ** 2 <= r * r ? '1' : '0').join('');
+        const l = listOf(state.sel[i]), j = l.indexOf(code); j >= 0 ? l.splice(j, 1) : l.push(code);
+        setSel(i, l.sort().join(',')); draw();
+      });
+      draw(); card.appendChild(box);
+    }
+  },
+  chips: {  // pick all fitting chips: q.chips = labels, a = labels of the correct chips
+    check: (q, s) => { const got = listOf(s).map(k => norm(q.chips[+k])).sort().join('\n'); return got === q.a.map(norm).sort().join('\n'); },
+    render(q, i, rev, card) {
+      const box = document.createElement('div'); box.className = 'chips', good = new Set(q.a.map(norm));
+      const on = () => listOf(rev ? state.answers[i] : state.sel[i]).map(Number);
+      q.chips.forEach((lab, k) => {
+        const b = document.createElement('button'); b.className = 'chip'; b.innerHTML = lab;
+        const sel = on().includes(k); if (sel) b.classList.add('sel');
+        if (rev) { b.disabled = true; const ok = good.has(norm(lab)); b.classList.add(ok && sel ? 'right' : ok ? 'missed' : sel ? 'wrong' : 'off'); }
+        else b.addEventListener('click', () => { const l = on(), j = l.indexOf(k); j >= 0 ? l.splice(j, 1) : l.push(k); setSel(i, l.sort((x, y) => x - y).join(',')); b.classList.toggle('sel'); });
+        box.appendChild(b);
+      });
+      card.appendChild(box);
+      const h = document.createElement('div'); h.className = 'whint'; h.textContent = rev ? 'grün = richtig gewählt · gestrichelt = fehlte · rot = falsch gewählt' : 'Alle passenden antippen.'; card.appendChild(h);
+    }
+  },
+  clock: {  // tap a number on the dial: q.clock = {n, from?}, a = ['3']
+    check: (q, s) => norm(s) === norm(q.a[0]),
+    render(q, i, rev, card) {
+      const n = q.clock.n, box = document.createElement('div'); box.className = 'wbox clockbox';
+      const draw = () => {
+        const v = rev ? state.answers[i] : state.sel[i], R = 98;
+        let s = `<svg viewBox="0 0 260 260" class="clock"><circle class="dial" cx="130" cy="130" r="${R}"/>`;
+        for (let k = 0; k < n; k++) {
+          const a = (-90 + 360 * k / n) * Math.PI / 180, x = 130 + R * Math.cos(a), y = 130 + R * Math.sin(a);
+          let c = 't'; if (q.clock.from === k) c += ' from';
+          if (rev) { if (String(k) === String(q.a[0])) c += ' right'; else if (String(k) === v) c += ' wrong'; } else if (String(k) === v) c += ' sel';
+          s += `<g class="${c}" data-k="${k}"><circle cx="${x}" cy="${y}" r="16"/><text x="${x}" y="${y}">${k}</text></g>`;
+        }
+        box.innerHTML = s + `<text class="mid" x="130" y="130">mod ${n}</text></svg>` + (q.clock.from !== undefined ? '<div class="whint">Umrandet = Startpunkt.</div>' : '');
+        if (!rev) box.querySelectorAll('.t').forEach(t => t.addEventListener('click', () => { setSel(i, t.dataset.k); draw(); }));
+      };
+      draw(); card.appendChild(box);
+    }
+  },
+  bits: {   // bit row with place values: q.bits = n, a = ['00010111']
+    ready: (q, s) => s.length === q.bits,
+    check: (q, s) => s === q.a[0],
+    render(q, i, rev, card) {
+      const n = q.bits, box = document.createElement('div'); box.className = 'gridbox';
+      const cur = () => (rev ? state.answers[i] : state.sel[i]) || '0'.repeat(n);
+      const t = document.createElement('table'); t.className = 'gridw bitsw';
+      t.innerHTML = '<tr>' + [...Array(n)].map((_, k) => `<th>2<sup>${n - 1 - k}</sup><small>${2 ** (n - 1 - k)}</small></th>`).join('') + '</tr>';
+      const tr = document.createElement('tr');
+      for (let k = 0; k < n; k++) {
+        const td = document.createElement('td'), b = document.createElement('button'); b.className = 'tg'; b.textContent = cur()[k];
+        if (rev) { b.disabled = true; td.className = cur()[k] === q.a[0][k] ? 'right' : 'wrong'; }
+        else b.addEventListener('click', () => { const s = [...cur()]; s[k] = s[k] === '1' ? '0' : '1'; setSel(i, s.join('')); b.textContent = s[k]; });
+        td.appendChild(b); tr.appendChild(td);
+      }
+      t.appendChild(tr); box.appendChild(t); card.appendChild(box);
+      const h = document.createElement('div'); h.className = 'whint'; h.textContent = rev ? 'grün = Bit richtig · rot = Bit falsch' : 'Bits antippen (0 ↔ 1).'; card.appendChild(h);
+    }
+  },
+  grid: {   // table with blanks: q.grid = {head:[…], rows:[[…, '?', …]], toggle?:['w','f']}, a = one entry per blank ('a|b' = alternatives)
+    ready: (q, s) => gridVals(s).filter(v => String(v || '').trim()).length === q.a.length,
+    check: (q, s) => { const v = gridVals(s); return q.a.every((w, b) => cellOk(w, v[b])); },
+    render(q, i, rev, card) {
+      const G = q.grid, box = document.createElement('div'); box.className = 'gridbox';
+      const vals = gridVals(rev ? state.answers[i] : state.sel[i]);
+      const t = document.createElement('table'); t.className = 'gridw';
+      t.innerHTML = '<tr>' + G.head.map(h => `<th>${h}</th>`).join('') + '</tr>';
+      let b = 0;
+      G.rows.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          if (cell !== '?') { td.className = 'given'; td.innerHTML = cell; tr.appendChild(td); return; }
+          const k = b++;
+          if (rev) {
+            const ok = cellOk(q.a[k], vals[k]); td.className = ok ? 'right' : 'wrong';
+            td.innerHTML = `<span class="got">${vals[k] || '–'}</span>` + (ok ? '' : `<span class="fix">${String(q.a[k]).split('|')[0]}</span>`);
+          } else if (G.toggle) {
+            const btn = document.createElement('button'); btn.className = 'tg'; btn.textContent = vals[k] || '·';
+            btn.addEventListener('click', () => { const opts = G.toggle, nx = opts[(opts.indexOf(vals[k]) + 1) % opts.length]; vals[k] = nx; btn.textContent = nx; setSel(i, JSON.stringify(vals)); });
+            td.appendChild(btn);
+          } else {
+            const inp = document.createElement('input'); inp.type = 'text'; inp.autocomplete = 'off'; inp.spellcheck = false; inp.value = vals[k] || '';
+            inp.addEventListener('input', () => { vals[k] = inp.value; setSel(i, JSON.stringify(vals)); });
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); confirmAnswer(); } });
+            td.appendChild(inp);
+          }
+          tr.appendChild(td);
+        });
+        t.appendChild(tr);
+      });
+      box.appendChild(t); card.appendChild(box);
+      const h = document.createElement('div'); h.className = 'whint';
+      h.textContent = rev ? 'grün = richtig · rot = falsch (darunter der richtige Wert)' : G.toggle ? `Felder antippen: ${G.toggle.join(' → ')}.` : 'Alle leeren Felder ausfüllen.';
+      card.appendChild(h);
+    }
+  }
+};
+
 function revealed(i) { return state.checked || state.shown[i]; }
 const isCorrectPos = (i, pos) => QUESTIONS[i].c.includes(state.order[i][pos]);
 function isRight(i) {
@@ -419,7 +653,19 @@ function renderCard() {
   card.innerHTML = `<div class="meta"><span class="pill">${q.t}</span>${isInput(q) ? '<span class="pill x">Eingabe</span>' : ''}<span>Frage ${pos0 + 1} von ${total()}</span></div>
     <div class="qtext">${q.q}</div>`;
   if (q.code) { const pre = document.createElement('pre'); pre.textContent = q.code; card.appendChild(pre); }
-  if (isInput(q)) {
+  // q.tt = {vars:'pq', col:'p ∨ q'}: truth table in the scriptum's row order (w… first), target column „?“
+  let ttRow = null;
+  if (q.tt) {
+    const n = q.tt.vars.length, rows = [];
+    for (let r = 0; r < 2 ** n; r++) rows.push([...q.tt.vars].map((v, k) => (r >> (n - 1 - k)) & 1 ? 'f' : 'w'));
+    ttRow = document.createElement('div'); ttRow.className = 'tt-row';
+    ttRow.innerHTML = `<table class="tt"><tr>${[...q.tt.vars].map(v => `<th>${v}</th>`).join('')}<th>${q.tt.col}</th></tr>` +
+      rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join('')}<td class="qm">?</td></tr>`).join('') + '</table>';
+    card.appendChild(ttRow);
+  }
+  if (q.venn && q.venn.sets) { const d = document.createElement('div'); d.className = 'wbox'; d.innerHTML = vennSvg(Object.keys(q.venn.sets), { sets: q.venn.sets, U: q.venn.U || [] }); card.appendChild(d); }
+  if (WIDGETS[q.kind]) WIDGETS[q.kind].render(q, i, rev, card);
+  else if (isInput(q)) {
     const w = document.createElement('div'); w.className = 'inpwrap';
     const inp = document.createElement('input');
     inp.type = 'text'; inp.autocomplete = 'off'; inp.spellcheck = false;
@@ -437,11 +683,12 @@ function renderCard() {
   } else {
     const hint = document.createElement('div'); hint.className = 'multi-hint';
     hint.textContent = 'Mehrfachauswahl: eine oder mehrere Antworten sind richtig.'; card.appendChild(hint);
-    const opts = document.createElement('div'); opts.className = 'opts';
+    const opts = document.createElement('div'); opts.className = q.tt ? 'opts tt-opts' : 'opts';
     const ticked = rev ? (ans || []) : state.sel[i];
     state.order[i].forEach((oi, pos) => {
       const b = document.createElement('button'); b.className = 'opt';
-      b.innerHTML = `<span class="k">${LETTERS[pos]}</span><span>${q.o[oi]}</span>`;
+      b.innerHTML = q.tt ? `<span class="k">${LETTERS[pos]}</span><span class="tcol">${q.o[oi].split(/\s+/).map(v => `<i class="${v}">${v}</i>`).join('')}</span>`
+        : `<span class="k">${LETTERS[pos]}</span><span>${q.o[oi]}</span>`;
       if (ticked.includes(pos)) b.classList.add('sel');
       if (rev) {
         b.disabled = true;
@@ -450,11 +697,17 @@ function renderCard() {
       } else b.addEventListener('click', () => toggle(pos));
       opts.appendChild(b);
     });
-    card.appendChild(opts);
+    (ttRow || card).appendChild(opts);
   }
   if (!rev) {
     const c = document.createElement('button'); c.className = 'btn primary confirm'; c.id = 'confirm';
     c.addEventListener('click', confirmAnswer); card.appendChild(c); updateConfirm();
+    if (q.ref) {   // look the topic up before answering; „← zurück zum Probetest“ brings you back to this question
+      const r = document.createElement('button'); r.className = 'btn small peek';
+      r.textContent = '📖 Erst im Skript nachlesen'; r.title = refTitle(q.ref);
+      r.addEventListener('click', () => { el('backToQuiz').hidden = false; jumpTo('s-' + q.ref.replace(/\./g, '-'), true); });
+      card.appendChild(r);
+    }
   } else {
     const ex = document.createElement('div'); ex.className = 'explain';
     const res = ans === null ? '<b class="res-bad">Nicht beantwortet.</b> ' : isRight(i) ? '<b class="res-ok">Richtig.</b> ' : '<b class="res-bad">Falsch.</b> ';
@@ -476,7 +729,7 @@ function renderCard() {
 }
 function pending(i) {
   const q = QUESTIONS[i], s = state.sel[i], a = state.answers[i];
-  if (isInput(q)) return s.trim() !== '' && s.trim() !== a;
+  if (isInput(q)) { const w = WIDGETS[q.kind]; return (w && w.ready ? w.ready(q, s) : s.trim() !== '') && s.trim() !== a; }
   return s.length && !(a && sameSet(a, s));
 }
 function updateConfirm() {

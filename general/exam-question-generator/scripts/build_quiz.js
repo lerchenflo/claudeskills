@@ -46,7 +46,13 @@ QUESTIONS.forEach((x, i) => {
   const n = `#${i + 1} (id ${x.id})`;
   if (x.kind !== undefined) {
     // input question (mixed format): no MC rules, only a valid answer, solution text and section link
-    if (!['num', 'text', 'set'].includes(x.kind)) err.push(`${n}: kind must be num, text or set`);
+    if (!['num', 'text', 'set', 'venn', 'chips', 'clock', 'bits', 'grid'].includes(x.kind)) err.push(`${n}: kind must be num, text, set, venn, chips, clock, bits or grid`);
+    if (x.kind === 'venn' && !(x.venn && [2, 3].includes((x.venn.names || []).length) && (x.a || []).every(c => new RegExp(`^[01]{${x.venn.names.length}}$`).test(c)))) err.push(`${n}: venn needs venn.names (2–3) and region codes like '110' in a`);
+    if (x.kind === 'chips' && !(Array.isArray(x.chips) && (x.a || []).every(v => x.chips.includes(v)))) err.push(`${n}: chips: every answer in a must be one of the chips`);
+    if (x.kind === 'clock' && !(x.clock && Number.isInteger(x.clock.n) && +x.a[0] >= 0 && +x.a[0] < x.clock.n)) err.push(`${n}: clock needs clock.n and an answer 0..n-1`);
+    if (x.kind === 'bits' && !(Number.isInteger(x.bits) && /^[01]+$/.test(x.a[0]) && x.a[0].length === x.bits)) err.push(`${n}: bits answer must be a 0/1 string of length bits`);
+    if (x.kind === 'grid' && !(x.grid && Array.isArray(x.grid.rows) && x.grid.rows.flat().filter(c => c === '?').length === (x.a || []).length)) err.push(`${n}: grid: number of '?' cells must equal a.length`);
+    if (['venn', 'chips', 'grid'].includes(x.kind) && !x.show) err.push(`${n}: ${x.kind} question needs show (solution text)`);
     if (!Array.isArray(x.a) || !x.a.length) err.push(`${n}: input question needs a non-empty answer array a`);
     if (x.kind === 'num' && Array.isArray(x.a) && x.a.some(v => !/^-?[\d.,]+$/.test(String(v)))) err.push(`${n}: num answers must be plain numbers`);
     if (!x.e) err.push(`${n}: missing explanation e`);
@@ -66,7 +72,10 @@ QUESTIONS.forEach((x, i) => {
   if (seen.has(key)) err.push(`${n}: duplicate question`); seen.add(key);
   if (x.id === undefined || ids.has(x.id)) err.push(`${n}: missing/duplicate id`); ids.add(x.id);
   const e = strip(x.e || '').replace(/„[^“]*“/g, '').replace(/z\. ?B\./g, '');
-  if (LETTER.test(e)) err.push(`${n}: explanation references an option by letter: ${x.e.slice(0, 80)}`);
+  // letters A–D that the stem itself uses as names (sets A, B, C …) are variables, not option references
+  const named = new Set((strip(x.q + ' ' + (x.code || '') + ' ' + JSON.stringify(x.venn || '')).match(/(^|[^\p{L}])[A-D](?![\p{L}])/gu) || []).map(m => m.slice(-1)));
+  const eL = named.size ? e.replace(new RegExp(`(^|[^\\p{L}])[${[...named].join('')}](?![\\p{L}])`, 'gu'), '$1·') : e;
+  if (LETTER.test(eL)) err.push(`${n}: explanation references an option by letter: ${x.e.slice(0, 80)}`);
   if (POSITION.test(e)) err.push(`${n}: explanation references options by position (erste/letzte …): ${e.match(POSITION)[0]}`);
   if (BAN.test(x.q)) err.push(`${n}: who/when/source question`);
   if (/aktivität|activity|übung|mini-akt/i.test(x.q + ' ' + x.e)) err.push(`${n}: mentions an in-class activity/exercise`);
