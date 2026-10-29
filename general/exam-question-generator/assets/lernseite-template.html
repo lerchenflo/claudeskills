@@ -66,6 +66,7 @@ main { overflow-y: auto; padding: 28px 32px 40px; }
 .opt { text-align: left; background: var(--panel); color: var(--text); border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 14px; font: inherit; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
 .opt:hover:not(:disabled) { border-color: var(--accent); }
 .peek { margin-left: 8px; }
+.tile.ext { outline: 1.5px dashed var(--muted); outline-offset: -5px; }
 /* answer widgets: Venn diagram, chips, clock, bit row, fill-in grid */
 .wbox { margin: 6px 0 4px; }
 .wbox svg { width: 100%; max-width: 430px; height: auto; display: block; touch-action: manipulation; }
@@ -253,6 +254,7 @@ html:not(.js) .tabs, html:not(.js) .docbar, html:not(.js) #docStat, html:not(.js
         <div class="stat"><span id="prog">0 / 0 beantwortet</span><span id="checkedInfo"></span></div>
         <label class="mode"><input type="checkbox" id="instant"><span class="sw"></span><span>Sofort prüfen<small id="modeHint"></small></span></label>
         <label class="mode"><input type="checkbox" id="random"><span class="sw"></span><span>Zufällige Reihenfolge<small id="randomHint"></small></span></label>
+        <label class="mode" id="extRow" hidden><input type="checkbox" id="extended"><span class="sw"></span><span>Erweiterter Modus<small id="extHint"></small></span></label>
         <div class="groups" id="groups"></div>
         <div class="legend">
           <span style="--c:var(--tile)">offen</span>
@@ -381,19 +383,21 @@ const topics = [...new Set(QUESTIONS.map(q => q.t))];
 let state;
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const shuffled = n => shuffle([...Array(n).keys()]);
-function pool() { return QUESTIONS.map((q, i) => i).sort((a, b) => topics.indexOf(QUESTIONS[a].t) - topics.indexOf(QUESTIONS[b].t) || a - b); }
-const makeSeq = random => random ? shuffle(pool()) : pool();
+// x:1 = extended mode (same concepts, new examples): only in the pool while „Erweiterter Modus“ is on
+const HAS_EXT = QUESTIONS.some(q => q.x), N_EXT = QUESTIONS.filter(q => q.x).length;
+function pool(ext) { return QUESTIONS.map((q, i) => i).filter(i => ext || !QUESTIONS[i].x).sort((a, b) => topics.indexOf(QUESTIONS[a].t) - topics.indexOf(QUESTIONS[b].t) || a - b); }
+const makeSeq = (random, ext) => random ? shuffle(pool(ext)) : pool(ext);
 function fresh() {
-  const instant = state ? state.instant : true, random = state ? state.random : false;
+  const instant = state ? state.instant : true, random = state ? state.random : false, extended = state ? !!state.extended : false;
   return { order: QUESTIONS.map(q => isInput(q) ? [] : shuffled(q.o.length)), sel: QUESTIONS.map(q => isInput(q) ? '' : []),
-           answers: Array(NQ).fill(null), shown: Array(NQ).fill(false), checked: false, cur: 0, instant, random, seq: makeSeq(random) };
+           answers: Array(NQ).fill(null), shown: Array(NQ).fill(false), checked: false, cur: 0, instant, random, extended, seq: makeSeq(random, extended) };
 }
 function save() { store.set(KEY + '-quiz', state); }
 function load() {
   const s = store.get(KEY + '-quiz', null);
   if (s && s.order && s.order.length === NQ && s.answers.length === NQ && s.sel && s.sel.length === NQ
       && QUESTIONS.every((q, i) => isInput(q) ? typeof s.sel[i] === 'string' : Array.isArray(s.sel[i]) && s.order[i].length === q.o.length)) {
-    if (!Array.isArray(s.seq) || s.seq.length !== NQ) s.seq = makeSeq(!!s.random);
+    if (!Array.isArray(s.seq) || !s.seq.every(i => i >= 0 && i < NQ) || s.seq.length !== pool(!!s.extended).length) s.seq = makeSeq(!!s.random, !!s.extended);
     if (!(s.cur >= 0 && s.cur < NQ)) s.cur = 0;
     return s;
   }
@@ -620,7 +624,7 @@ function buildSidebar() {
     positions.forEach(pos => {
       const i = state.seq[pos], b = document.createElement('button');
       b.className = 'tile'; b.textContent = pos + 1; b.dataset.i = i;
-      b.title = `Frage ${pos + 1} · ${QUESTIONS[i].t}${isInput(QUESTIONS[i]) ? ' · Eingabe' : ''}`;
+      b.title = `Frage ${pos + 1} · ${QUESTIONS[i].t}${isInput(QUESTIONS[i]) ? ' · Eingabe' : ''}${QUESTIONS[i].x ? ' · erweitert' : ''}`;
       b.addEventListener('click', () => { closeDrawer(); go(pos); });
       grid.appendChild(b);
     });
@@ -629,7 +633,7 @@ function buildSidebar() {
 }
 function updateSidebar() {
   document.querySelectorAll('.tile').forEach(b => {
-    const i = +b.dataset.i; b.className = 'tile';
+    const i = +b.dataset.i; b.className = 'tile' + (QUESTIONS[i].x ? ' ext' : '');
     if (isInput(QUESTIONS[i])) b.classList.add('inp');
     if (revealed(i)) b.classList.add(state.answers[i] === null ? 'skipped' : isRight(i) ? 'ok' : 'bad');
     else if (state.answers[i] !== null) b.classList.add('answered');
@@ -645,12 +649,14 @@ function updateSidebar() {
   el('modeHint').textContent = state.instant ? 'Lösung direkt nach jeder Antwort' : 'Lösung erst mit „Prüfen“ am Ende';
   el('random').checked = state.random;
   el('randomHint').textContent = state.random ? 'Fragen gemischt' : 'Fragen nach Thema';
+  el('extRow').hidden = !HAS_EXT; el('extended').checked = !!state.extended;
+  el('extHint').textContent = state.extended ? `+ ${N_EXT} Zusatzfragen mit neuen Beispielen` : `nur Kernfragen (${N_EXT} Zusatzfragen ausgeblendet)`;
   el('hint').textContent = 'Auswahlfragen: alle zutreffenden Antworten ankreuzen (Tasten 1–4 / A–D). Eingabefragen: Ergebnis eintippen. Dann „Antwort bestätigen“ oder Enter. ←/→ blättern. „Im Skript nachlesen“ springt zur passenden Stelle der Zusammenfassung.';
 }
 function renderCard() {
   const pos0 = state.cur, i = qi(), q = QUESTIONS[i], ans = state.answers[i], rev = revealed(i);
   const card = el('card');
-  card.innerHTML = `<div class="meta"><span class="pill">${q.t}</span>${isInput(q) ? '<span class="pill x">Eingabe</span>' : ''}<span>Frage ${pos0 + 1} von ${total()}</span></div>
+  card.innerHTML = `<div class="meta"><span class="pill">${q.t}</span>${isInput(q) ? '<span class="pill x">Eingabe</span>' : ''}${q.x ? '<span class="pill x">erweitert</span>' : ''}<span>Frage ${pos0 + 1} von ${total()}</span></div>
     <div class="qtext">${q.q}</div>`;
   if (q.code) { const pre = document.createElement('pre'); pre.textContent = q.code; card.appendChild(pre); }
   // q.tt = {vars:'pq', col:'p ∨ q'}: truth table in the scriptum's row order (w… first), target column „?“
@@ -791,7 +797,8 @@ el('restart').addEventListener('click', () => {
   state = fresh(); buildSidebar(); render();
 });
 el('instant').addEventListener('change', e => { state.instant = e.target.checked; render(); });
-el('random').addEventListener('change', e => { state.random = e.target.checked; const q = qi(); state.seq = makeSeq(state.random); state.cur = Math.max(0, state.seq.indexOf(q)); buildSidebar(); render(); });
+el('extended').addEventListener('change', e => { state.extended = e.target.checked; const q = qi(); state.seq = makeSeq(state.random, state.extended); state.cur = Math.max(0, state.seq.indexOf(q)); buildSidebar(); render(); save(); });
+el('random').addEventListener('change', e => { state.random = e.target.checked; const q = qi(); state.seq = makeSeq(state.random, state.extended); state.cur = Math.max(0, state.seq.indexOf(q)); buildSidebar(); render(); });
 document.addEventListener('keydown', e => {
   if (view !== 'quiz' || ['INPUT', 'TEXTAREA'].includes(e.target.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
   const k = e.key.toLowerCase();

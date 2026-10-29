@@ -724,7 +724,9 @@ generic version.
   Widgets need `show` (solution text). `kind:'set'` accepts nested sets and
   tuples (`{∅, {1}}`, `{(a, 1), (b, 2)}`). Every question with `ref` shows
   „📖 Erst im Skript nachlesen“ before answering (jumps to the section, „←
-  zurück zum Probetest“ returns). `build_quiz.js` checks region codes, chip
+  zurück zum Probetest“ returns). Questions with `x:1` appear only with the
+  „Erweiterter Modus“ switch (dashed tiles, „erweitert“ pill); mock exams work
+  well as their own topic („Probeprüfung N“, input/widgets only). `build_quiz.js` checks region codes, chip
   labels, blank counts and bit lengths; letters A–D that the stem, code or
   Venn data use as names count as variables, not option references.
 - **Build:** `node scripts/build_quiz.js --link questions.js assets/quiz-template.html /tmp/check.html`
