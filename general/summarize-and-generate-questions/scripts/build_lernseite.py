@@ -9,6 +9,8 @@ Usage:
 The summary HTML stays the single source (also used for the print PDF). Headings h2/h3 that start
 with a number ("2.3 …") get ids s-2-3 – a question's `ref:'2.3'` links there. Exercise solutions
 (<div class="a">) and theory answers (<div class="tq-a">) are wrapped in <details> („Lösung zeigen“).
+Claude additions (<div class="alarm added">) become collapsed <details class="claude">: the orange header bar
+stays visible, the body opens on click or with the sidebar switch „Ergänzungen von Claude zeigen“.
 """
 import argparse
 import re
@@ -99,6 +101,42 @@ def wrap_divs(html: str, opening: str) -> str:
     return ''.join(out)
 
 
+def block_end(html: str, i: int) -> int:
+    """Index just after the </div> that closes the <div …> starting at i."""
+    depth, j = 0, i
+    while True:
+        o, c = html.find('<div', j), html.find('</div>', j)
+        if o != -1 and o < c:
+            depth += 1
+            j = o + 4
+        else:
+            depth -= 1
+            j = c + 6
+            if depth == 0:
+                return j
+
+
+CLAUDE_OPEN = '<div class="alarm added">'
+
+
+def collapse_claude(html: str) -> str:
+    """Turn every Claude addition into a collapsed <details>; its label becomes the clickable summary."""
+    out, pos = [], 0
+    while True:
+        i = html.find(CLAUDE_OPEN, pos)
+        if i < 0:
+            break
+        j = block_end(html, i)
+        inner = html[i + len(CLAUDE_OPEN):j - len('</div>')]
+        inner, n = re.subn(r'^\s*<span class="lbl">(.*?)</span>', r'<summary class="lbl">\1</summary>', inner, count=1, flags=re.S)
+        if not n:
+            inner = '<summary class="lbl">✎ Ergänzung von Claude</summary>' + inner
+        out.append(html[pos:i] + '<details class="alarm added claude">' + inner + '</details>')
+        pos = j
+    out.append(html[pos:])
+    return ''.join(out)
+
+
 def make_interactive(html: str) -> str:
     n = {'a': 0, 't': 0}
 
@@ -123,7 +161,7 @@ def build_toc(html: str) -> str:
 
 
 INTRO = '''<div class="box info"><div class="lbl">ℹ So funktioniert diese Seite</div>
-Links zwischen <b>📖 Zusammenfassung</b> und <b>✎ Probetest</b> wechseln. In der Zusammenfassung sind bei allen <b>Übungsaufgaben</b> und <b>Theoriefragen</b> die Lösungen versteckt: erst selbst lösen (optional im Notizfeld), dann „Lösung zeigen“. Notizen und aufgedeckte Lösungen merkt sich der Browser. Im Probetest führt „Im Skript nachlesen“ zur passenden Stelle hier.</div>
+Links zwischen <b>📖 Zusammenfassung</b> und <b>✎ Probetest</b> wechseln. In der Zusammenfassung sind bei allen <b>Übungsaufgaben</b> und <b>Theoriefragen</b> die Lösungen versteckt: erst selbst lösen (optional im Notizfeld), dann „Lösung zeigen“. <b>Ergänzungen von Claude</b> (orange) sind eingeklappt: einzeln anklicken oder links alle einschalten. <b>Textgröße rechts</b> links mit A− / A+ (oder ⌘/Strg + Plus/Minus) ändern; die Seitenleiste lässt sich am Rand breiter oder schmaler ziehen. Notizen, aufgedeckte Lösungen und Einstellungen merkt sich der Browser. Im Probetest führt „Im Skript nachlesen“ zur passenden Stelle hier.</div>
 '''
 
 
@@ -136,6 +174,7 @@ def main():
     css = re.search(r'<style>(.*?)</style>', summary, re.S).group(1)
     body = re.search(r'<body>(.*?)</body>', summary, re.S).group(1)
     body = add_heading_ids(body)
+    body = collapse_claude(body)
     body = make_interactive(body)
     # intro box right after the title block (before the first <div class="cover">, if there is one)
     body = body.replace('<div class="cover">', INTRO + '<div class="cover">', 1) if '<div class="cover">' in body else INTRO + body
@@ -155,8 +194,10 @@ def main():
     dup = {i for i in ids if ids.count(i) > 1}
     refs = re.findall(r"ref:'([\d.]+)'", questions)
     missing = [r for r in refs if 's-' + r.replace('.', '-') not in ids]
+    n_claude = body.count('class="alarm added claude"')
     print(f'{OUT.name}: {len(page) // 1024} KB · {len(ids)} headings · '
-          f'{body.count("data-rid=")} interactive items · {len(refs)} quiz refs')
+          f'{body.count("data-rid=")} interactive items · {n_claude} Claude additions (collapsed) · '
+          f'{len(refs)} quiz refs')
     if dup:
         print('WARNING duplicate heading ids:', sorted(dup))
     if missing:

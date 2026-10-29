@@ -563,6 +563,8 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
    - Files that are only reference (textbook) or must not be used
      (AI-generated, other course, outdated version).
    - Material language if not obvious.
+   - Summary output: HTML learning page (left TOC, content zoom, collapsible
+     Claude additions), PDF, or both.
    Ask follow-ups for unclear spots in the notes the same way, in batches.
 4. **Write the files.** Course `CLAUDE.md` (from the template: preferences,
    exam facts from the interview, a sources table with every file and what it
@@ -581,7 +583,9 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
    Claude addition as `.alarm.added`; exercises with full task text and
    solution, slips as `.alarm.slip`; a box per topic listing what the allowed
    formula sheet already covers; a symbol table for math courses; clean SVG
-   drawings where the notes have sketches. Render
+   drawings where the notes have sketches. Output as asked in the interview:
+   HTML learning page (see "Learning page"; empty question bank until the
+   review is done) and/or render
    `<Course>_Summary_Draft.pdf` into the course folder (name it in the
    material's language, e.g. `<Kurs>_Zusammenfassung_Entwurf.pdf`), look at a few
    pages, re-run `extract_texts.py`.
@@ -747,6 +751,18 @@ When the user wants a summary alongside (or before) the questions:
   `<mark class="hl">` (solid yellow, bold). Use alarms only where they apply,
   never on clear content, so they keep their effect. Normal content uses the
   calm `.box.def/.merk/.fs/.info` boxes.
+- **Claude's own additions and solutions go into `.alarm.added`** – every
+  explanation, interpretation or solution Claude wrote itself (solutions to
+  exercise sheets without a class solution, solution sketches for old exams,
+  general-knowledge notes). On the learning page these boxes are **collapsed**
+  (drop-down: orange header bar visible, body on click) and one sidebar switch
+  „Ergänzungen von Claude zeigen“ opens all of them; the user enables them
+  when wanted. `.alarm.missing` / `.alarm.slip` (CHECK, conflicts, slips) stay
+  **big and visible** until the user has reviewed them – never collapse those.
+- **Ask PDF or HTML.** Some users want only the HTML learning page (no PDF):
+  then build the learning page from the summary source right away (empty
+  `const QUESTIONS = [];` hides the quiz tab until questions exist) and skip
+  the PDF. Otherwise:
 - Produce the PDF by writing HTML + print CSS and rendering it with a headless
   browser (`google-chrome-stable --headless --no-pdf-header-footer
   --print-to-pdf=out.pdf file.html`) or WeasyPrint if installed. Look at a page
@@ -931,6 +947,16 @@ generic version.
   It scopes the summary CSS under `.doc`, adds heading ids, writes the TOC
   statically, wraps solutions in `<details>` with a note field, and warns on
   duplicate ids or refs without a section. Rebuild after every summary change.
+- **View controls (both templates):** „Textgröße rechts“ (A− / 100 % / A+,
+  also ⌘/Ctrl + Plus/Minus/0 and trackpad pinch) zooms **only the content on
+  the right** via CSS `zoom` on `.zoomable` elements – the sidebar keeps its
+  size. The sidebar width is draggable (fixed `.resizer` at its right edge,
+  CSS variable `--sidew`, 220 px … 60 % of the window, arrow keys, double
+  click = 340 px). Zoom and width are saved per page in `localStorage`. Users
+  asked for this because browser zoom enlarges the sidebar too.
+- **Collapsed Claude additions:** `build_lernseite.py` turns every
+  `<div class="alarm added">` into `<details class="alarm added claude">`
+  (label → `<summary>`); the switch `#claudeAll` opens/closes all, state saved.
 - **Must hold (tested):** one file, no external requests (works when sent
   alone); works **without JavaScript** (file previews: Finder spacebar, phone
   Files app) – static TOC, native `<details>` solutions, JS-only controls
@@ -938,7 +964,12 @@ generic version.
   with a top bar and „☰ Inhalt“ drawer; state in `localStorage`
   (try/catch). Strict CSP works: `default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:`.
 - **Test** with Playwright (WebKit desktop + iPhone, Chromium, JS off): reveal,
-  TOC jump, drawer, input answer, wrong marking, ref jump + back. Use the
+  TOC jump, drawer, input answer, wrong marking, ref jump + back, content zoom
+  (sidebar unchanged), sidebar resize, Claude switch. Without Playwright: copy
+  the page, append a test script that writes PASS/FAIL into a `data-log`
+  attribute and run `chrome-headless-shell --headless --virtual-time-budget=3000
+  --dump-dom` (cached in `~/Library/Caches/ms-playwright/chromium_headless_shell-*/`);
+  for the no-JS view strip the `<script>` tags and take a `--screenshot`. Use the
   Playwright version that matches the cached browsers: `npx playwright
   install` from another version **deletes** the other versions' browsers in
   `~/Library/Caches/ms-playwright` (incl. the headless shell used for PDFs).
