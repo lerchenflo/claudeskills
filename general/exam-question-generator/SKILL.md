@@ -19,6 +19,10 @@ harder to answer by pattern-matching the slide text.
   (a number, a base conversion, a set) become **input questions**
   (`kind:'num'|'text'|'set'`, see "Learning page"), never MC with guessable
   options; concepts, definitions and "which statements are true" stay MC.
+  **Prefer the answer widgets** (truth table, fill-in grid, Venn shading,
+  chips, mod clock, bit row – see "Learning page → Widgets") over plain MC
+  wherever the content has a visual form; the user wants „really cool
+  questions“, not only text options.
   Open free-text / essay answers are never auto-checked: put them as theory
   questions with a hidden solution into the summary instead.
 - **MC questions:** exactly 4 options (A–D), 1–4 correct (never 0), scored
@@ -704,6 +708,25 @@ generic version.
   displayed solution. `ref` = section number; the solution box gets
   „📖 Im Skript nachlesen“ (primary button when wrong) and a „← zurück zum
   Probetest“ button. Optional `code`, `unit`, `demo:true`.
+- **Widgets** (all in `assets/lernseite-template.html`, tested in Chromium and
+  iPhone WebKit; the answer is kept as a string, so saving/„Prüfen“ work as usual):
+
+  | field / kind | shows | answer `a` |
+  |---|---|---|
+  | `tt:{vars:'pq', col:'p ∨ q'}` (MC or input) | truth table with a „?“ column; MC options written „w w w f“ become candidate columns next to it | as usual |
+  | `kind:'grid'`, `grid:{head:[…], rows:[[…,'?',…]], toggle?:['w','f']}` | fill-in table: truth tables with helper columns, Euclid table, ℤ/nℤ tables … (`toggle` = tap to cycle values instead of typing) | one entry per `?`, row by row; `'∅\|{}'` = alternatives |
+  | `kind:'venn'`, `venn:{names:['A','B','C']}` | tap regions to shade a set expression (2 or 3 sets) | region codes: `'110'` = in 1st and 2nd, not 3rd; `'000'` = outside |
+  | `venn:{sets:{A:[…],B:[…]}, U:[…]}` (any question) | Venn diagram with the elements drawn in their regions | – |
+  | `kind:'chips'`, `chips:[labels]` | tap all fitting chips – more than 4 options (elements of ℘(M), number sets, divisors …) | labels of the correct chips |
+  | `kind:'clock'`, `clock:{n:12, from?:9}` | tap a number on a mod-n dial | `['2']` |
+  | `kind:'bits'`, `bits:8` | bit row with place values 2⁷ … 2⁰, tap to flip | `['00010111']` |
+
+  Widgets need `show` (solution text). `kind:'set'` accepts nested sets and
+  tuples (`{∅, {1}}`, `{(a, 1), (b, 2)}`). Every question with `ref` shows
+  „📖 Erst im Skript nachlesen“ before answering (jumps to the section, „←
+  zurück zum Probetest“ returns). `build_quiz.js` checks region codes, chip
+  labels, blank counts and bit lengths; letters A–D that the stem, code or
+  Venn data use as names count as variables, not option references.
 - **Build:** `node scripts/build_quiz.js --link questions.js assets/quiz-template.html /tmp/check.html`
   (validation only), then
   `python3 scripts/build_lernseite.py --summary <summary.html> --questions questions.js --template assets/lernseite-template.html --out <Kurs>_Lernseite.html --title "<Kurs>" --sub "<Semester>" --key <kurs>-lernseite-v1`.
