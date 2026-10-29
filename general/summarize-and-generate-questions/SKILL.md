@@ -1,9 +1,20 @@
 ---
-name: exam-question-generator
-description: Generate applied, reasoning-style multiple-choice exam questions from a study document (lecture slides, summaries, textbook chapters). Use this whenever the user uploads or references study material and asks for practice questions, a quiz, self-test questions, or exam prep — especially when they want questions that go beyond simple recall (e.g. "make it harder", "more like real exam questions", "questions that make me actually think", "not just picking the bullet point off the slide"). Also use when the user asks to reverse-engineer, replicate, or match the style of example exam questions they paste in. Also covers summarizing new lecture decks into a study-summary PDF first, and building an interactive HTML practice test (clickable question grid on the left, auto-advance on answer, back and check buttons, random-question-order toggle, extended mode). Extracts course PDFs to plain text once so later runs read text, not PDFs. Asks per course: multiple choice only, or mixed with typed-answer questions (number / text / set) for simple calculations. Can also build a learning page: summary + connected quiz in one offline HTML file (solutions behind „Lösung zeigen“, a wrong answer links to the summary section). MC defaults from the first course (SE micro-quizzes): 4 options, mostly exactly 1 correct, slash-form stems like "Welche Aussage/n beschreibt/en …"; never asks who/when/source-citation questions like "Von wem stammt".
+name: summarize-and-generate-questions
+description: Set up a course folder for exam prep and generate applied, reasoning-style multiple-choice exam questions from a study document (lecture slides, summaries, textbook chapters). Use this whenever the user uploads or references study material and asks for practice questions, a quiz, self-test questions, or exam prep — especially when they want questions that go beyond simple recall (e.g. "make it harder", "more like real exam questions", "questions that make me actually think", "not just picking the bullet point off the slide"). Also use when the user asks to reverse-engineer, replicate, or match the style of example exam questions they paste in. Course setup: when called in a new folder of course files (or asked to "summarize all files", "set up this course", "prepare this folder"), it extracts the text of every file (PDF, Xournal++ notes, photos), interviews the user about what is NOT on the exam, writes a CLAUDE.md that indexes every file plus open-question and change-log files, and summarizes everything into a study summary with loud alarm boxes for missing content. Also covers summarizing new lecture decks into a study-summary PDF first, and building an interactive HTML practice test (clickable question grid on the left, auto-advance on answer, back and check buttons, random-question-order toggle, extended mode). Extracts course PDFs to plain text once so later runs read text, not PDFs. Asks per course: multiple choice only, or mixed with typed-answer questions (number / text / set) for simple calculations. Can also build a learning page: summary + connected quiz in one offline HTML file (solutions behind „Lösung zeigen“, a wrong answer links to the summary section). MC defaults from the first course (SE micro-quizzes): 4 options, mostly exactly 1 correct, slash-form stems like "Welche Aussage/n beschreibt/en …"; never asks who/when/source-citation questions like "Von wem stammt".
 ---
 
-# Exam Question Generator
+# Summarize and generate questions
+
+Two jobs: **set up and summarize a course folder** (see "Course setup") and
+**generate exam questions** from it. In a folder without a course `CLAUDE.md`,
+start with the course setup.
+
+**Language:** this skill is written in English. Write summaries,
+transcriptions and questions in the material's language. German quotes below
+(exam stems like „Welche Aussage/n …“, UI labels like „Lösung zeigen“) come
+from the German course the skill was calibrated on and from the German page
+templates; for another language, translate the labels and follow that
+language's exam grammar.
 
 Turns study material into multiple-choice questions that test **application and
 discrimination**, not just recall of bullet points. This is the difference between
@@ -54,6 +65,9 @@ harder to answer by pattern-matching the slide text.
   the correct option must not be the longest or most qualified one by habit
   (the build checks this). Put precision into the wording of all four options,
   not only into the right one.
+- **Never assume** (see "Course setup"): a question may only test content that
+  is settled (two or more sources agree, or the user confirmed it). Open or
+  single-source spots get no question until the user answers.
 - **Every correct option must be unambiguously backed by the source, every
   wrong option clearly wrong for a nameable reason.** With multi-answer, an
   "arguably true" distractor makes the question unanswerable — drop it.
@@ -454,6 +468,88 @@ Don't default to all-recall or all-applied. Unless the user specifies otherwise:
   recall, 10 applied, covering topics X–Y") so the user knows what they're
   getting and can ask to shift the balance.
 
+## Course setup (new folder → index, interview, summary)
+
+Use when the skill is called in a folder of course files that has no course
+`CLAUDE.md` yet, or when the user asks to summarize all files / set up the
+course. Reproduces the Diskrete-Mathematik setup. Templates:
+`assets/course-setup/` (CLAUDE.md, SESSION_LOG.md, OPEN_QUESTIONS.md,
+TO_VERIFY.md) and `assets/summary-template.html`.
+
+**Most important rule: never assume.** A fact counts as settled only when
+two or more independent sources agree (e.g. the script and the user's notes,
+or the notes of two different classmates). If only one source has it and it
+is unclear, if sources disagree, or if nothing covers it, do not guess,
+interpret or fill it in: mark it (`[UNCLEAR]`/`[CHECK]`/`[GAP]`), add it to
+`OPEN_QUESTIONS.md` and ask the user (AskUserQuestion). Ask for more
+sources too (classmates' notes, photos) where a spot has only one. Anything
+Claude adds anyway (a solved gap, an interpretation) is an assumption: mark it
+as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
+
+1. **Inventory.** List every file (`find . -type f`, skip `.DS_Store`, hidden
+   and system folders). Group them: lecture script/slides, exercise sheets,
+   own solutions, handwritten notes (`.xopp`, scans, photos), formula sheets,
+   old exams/quizzes, textbooks, classmates' material, other. `<work>` =
+   `Claude/` unless the folder already has `06_Claude/` or `Claude/`.
+2. **Extract all text once** (workflow step 00): copy
+   `scripts/extract_texts.py` to `<work>/tools/`, run it (`--out <work>`).
+   - `.xopp` (Xournal++): export with the notes
+     (`xournalpp --create-pdf=<work>/text/<name>_annotiert.pdf <file>.xopp`;
+     macOS: `/Applications/Xournal++.app/Contents/MacOS/xournalpp`), render
+     the pages with handwriting (`pdftoppm -png -r 100`), read them and write
+     `<work>/text/<name>_transcription.md`: printed text plus every note,
+     exactly as written. Markers: `✍` handwriting, `⌨` typed text box,
+     `==…==` highlighted, `[CHECK: …]` probably wrong, `[UNCLEAR: …]` not
+     readable, `[GAP]` gap in the script without notes, `[ADDITION]`
+     Claude addition. Never correct silently. Note page offsets between `.xopp`
+     and PDF (inserted pages).
+   - Photos and scans without a text layer: transcribe the same way.
+   - `.pptx`/`.docx`: convert with `soffice --headless --convert-to pdf` if
+     LibreOffice is installed, else read them with python-pptx/python-docx.
+   - Big textbooks: extract too, but only for lookups.
+   - **Cross-check the sources.** When several sets of notes or solutions
+     cover the same material (user, classmates, lecturer's solutions), compare
+     them spot by spot and write `<work>/text/sources_comparison.md`: per
+     spot, which sources agree (confirmed), which disagree (conflict: ask) and
+     which have it only once (single source: unclear spots go to the user).
+     Mark confirmed spots in `OPEN_QUESTIONS.md` / `TO_VERIFY.md`, but never
+     close them for good.
+3. **Interview the user** (AskUserQuestion, one call, up to 4 questions, skip
+   what the material already answers):
+   - What is **not** on the exam? Options from the chapters/files found
+     (multiSelect), plus „everything is relevant“ and „not known yet – keep
+     everything“; a page or paragraph limit can be typed in „Other“.
+   - Exam format (written with sub-questions / multiple choice / mixed /
+     unknown) and allowed aids (formula sheet found in the folder?).
+   - Files that are only reference (textbook) or must not be used
+     (AI-generated, other course, outdated version).
+   - Material language if not obvious.
+   Ask follow-ups for unclear spots in the notes the same way, in batches.
+4. **Write the files.** Course `CLAUDE.md` (from the template: preferences,
+   exam facts from the interview, a sources table with every file and what it
+   is, page ranges per chapter, `<work>` file list), `<work>/SESSION_LOG.md`,
+   `<work>/OPEN_QUESTIONS.md` (every `[UNCLEAR]`/`[CHECK]`/`[GAP]`,
+   numbered, with page), `<work>/TO_VERIFY.md` (every assumption and
+   Claude addition). In a folder that already uses German names
+   (`OFFENE_FRAGEN.md`, `NACHPRUEFEN.md`, `[UNKLAR]` …), keep those. Before changing any user file: copy it to
+   `<work>/backup/`.
+5. **Summarize everything in scope** into
+   `<work>/sources/<Course>_Summary.html` from
+   `assets/summary-template.html` (see "Summarizing the material first"):
+   one numbered chapter per main topic; open points overview ("Still
+   missing") at the top; ★ exam-relevant spots as `.alarm.exam` (plus their own
+   section); every gap/`[UNKLAR]` as `.alarm.missing` with its #number; every
+   Claude addition as `.alarm.added`; exercises with full task text and
+   solution, slips as `.alarm.slip`; a box per topic listing what the allowed
+   formula sheet already covers; a symbol table for math courses; clean SVG
+   drawings where the notes have sketches. Render
+   `<Course>_Summary_Draft.pdf` into the course folder (name it in the
+   material's language, e.g. `<Kurs>_Zusammenfassung_Entwurf.pdf`), look at a few
+   pages, re-run `extract_texts.py`.
+6. **Stop for review.** Report what was indexed, transcribed and summarized,
+   and ask the open questions with AskUserQuestion. Exam questions come only
+   after the user reviewed the summary (then continue with "Workflow" step 0).
+
 ## Workflow
 
 00. **Work from a plain-text extract, not from the PDFs.** `<work>` = the
@@ -567,7 +663,7 @@ When the user wants a summary alongside (or before) the questions:
   important content loud, not pale tints on white. Use the solid-header alarm
   boxes (thick border, saturated header bar with white text, tinted body):
   `.alarm.missing` (red – missing/unclear, still needs input; also an
-  overview box „Fehlt noch“ at the top), `.alarm.added` (orange – Claude
+  overview box "Still missing" at the top), `.alarm.added` (orange – Claude
   added, interpreted or assumed something), `.alarm.exam` (magenta – ★
   Prüfungsrelevant), `.alarm.slip` (brown – exercise solved wrongly in class).
   Inline: `<span class="flag missing">FEHLT</span>`, important terms with
