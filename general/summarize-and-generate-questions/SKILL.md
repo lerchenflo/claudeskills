@@ -32,7 +32,10 @@ harder to answer by pattern-matching the slide text.
   question must be correct in content and in context. Follow "Correctness
   check" before anything is handed over; when in doubt, ask (never assume).
 - **Ask the format when a new quiz is created: „Multiple Choice only“ or
-  „gemischt“ (MC + input questions).** MC-only came from the first course (SE),
+  „gemischt“ (MC + input questions).** For a mixed set, offer a **format
+  sample** first: one question per format from the "Question format catalog",
+  built into the learning page, and let the user pick the formats they like
+  before writing the full set. MC-only came from the first course (SE),
   it is not a global rule. Mixed: simple calculations and short exact answers
   (a number, a base conversion, a set) become **input questions**
   (`kind:'num'|'text'|'set'`, see "Learning page"), never MC with guessable
@@ -883,6 +886,50 @@ double-click), saved next to the source material with a distinct name such as
   (`google-chrome-stable --headless --dump-dom` with a small test script that
   writes PASS/FAIL into a `data-log` attribute) and take one screenshot
   (`--screenshot`) to check it renders before handing it over.
+
+## Question format catalog (pick per course)
+
+All formats run on the learning page (`assets/lernseite-template.html`);
+the standalone quiz template is MC only. Build a format sample (one question
+each, real course content) when a course starts a mixed set, let the user
+pick, and record the chosen formats and the favourite in the course
+`CLAUDE.md`. Examples are from the Strukturierte-Programmierung course
+(C programming, German), where the user liked all of them and the desk-check
+table most.
+
+| # | Format | Fields | Use it for | Example |
+|---|---|---|---|---|
+| 1 | MC, several correct | `o`, `c:[…]` | statement checks (A3), slash stem | „Welche Aussage/n über Zeichenketten in C trifft/treffen zu?“ |
+| 2 | MC, one correct | `o`, `c:[i]` | discrimination (A1/A2), singular stem | „Welche Zeile ist gültiger C-Code und kein Pseudocode?“ – options differ only in `and`/`mod`/`:=` vs `&&`/`%`/`=` |
+| 3 | Code + MC | `code`, `o`, `c` | read a program, find the bug and the fix (C1) | `while (i <= LEN)` writes past the array end → „Der letzte Durchlauf schreibt nach `values[5]`.“ ✔ |
+| 4 | Number input | `kind:'num'` | value of an expression, output of code | `int a = 7 / 2 * 2;` → 6 |
+| 5 | Text input | `kind:'text'`, `strict:true` for code | write one line of code, a short exact term | „Schreibe die Präprozessor-Zeile …“ → `#define LEN 24` (`strict` so `;` is not ignored) |
+| 6 | Set input | `kind:'set'` | result of a procedure as a set | sieve up to 30 → `{2, 3, 5, …, 29}` |
+| 7 | Fill-in table | `kind:'grid'`, cells `'?'` | desk check (Schreibtischtest): variable values after each loop pass; Euclid tables | GGT(45, 12): x/y after pass 1–3 |
+| 8 | Tap-to-cycle table | `kind:'grid'`, `toggle:[…]` | classify 4–8 items into 2–4 categories | step → Präprozessor / Compiler / Linker / Prozessor |
+| 9 | Chips | `kind:'chips'`, `chips:[…]` | pick all fitting items from more than 4 | lines of a program that are preprocessor directives; values that count as true in `if (…)` |
+| 10 | Bit row | `kind:'bits'` | base conversion to binary | 37 → `00100101` |
+| 11 | Truth table | `tt:{vars, col}` + MC columns | logic expressions | `a && !b` → „f w f f“ |
+| 12 | Venn / mod clock | `kind:'venn'`, `kind:'clock'` | set expressions, modular arithmetic | (Diskrete Mathematik) |
+| 13 | Writing task | `<div class="tq">` in the summary | write pseudocode or C yourself; hidden solution, self-checked | „Schreibe eine Funktion, die das Maximum eines Feldes (Arrays) liefert.“ |
+| 14 | Mock exam | own topic „Probeprüfung N“ | exam-like mix, input and widget questions only | 3 × ~10 questions |
+
+Rules learned with these formats:
+
+- **Explain the procedure in the stem** when a question asks for the result
+  of an algorithm (sieve, desk check, conversion): numbered steps first, then
+  the question. The user rejected a sieve question that assumed the method.
+- **Code questions show the full program** in `code` (includes, `main`,
+  `return 0;`); compile and run every program before using it.
+- **Chip labels and given grid cells are HTML** (`innerHTML`): escape `<`/`>`
+  (`&lt;stdio.h&gt;`); `a` must repeat the chip label strings exactly.
+- **Text answers ignore `,` and `;`** (for truth-table strings) – set
+  `strict:true` whenever the answer is code.
+- **Toggle tables:** each row must belong to exactly one category; avoid
+  rows two stages touch (a line that uses `LEN` is processed by the
+  preprocessor *and* compiled – ask about the step, not the line).
+- Test every format in the browser: render, the correct answer is accepted,
+  a typical wrong answer is rejected (see "Learning page → Test").
 
 ## Learning page (summary + connected quiz)
 
