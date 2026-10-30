@@ -520,7 +520,8 @@ function checkInput(q, ans) {
   if (q.kind === 'num') { const v = parseFloat(norm(ans).replace(',', '.')); return q.a.some(x => Math.abs(parseFloat(x) - v) < 1e-9) && /^-?[\d.,]+$/.test(norm(ans)); }
   if (WIDGETS[q.kind]) return WIDGETS[q.kind].check(q, ans);
   if (q.kind === 'set') { const s = canonSet(ans); return q.a.some(x => canonSet(x) === s); }
-  const t = v => norm(v).replace(/[,;]/g, '');   // text: commas/semicolons ignored ("f, w, w, w" = "fwww")
+  // text: commas/semicolons ignored ("f, w, w, w" = "fwww"); q.strict keeps them (code answers like "#define LEN 24")
+  const t = v => q.strict ? norm(v) : norm(v).replace(/[,;]/g, '');
   return q.a.some(x => t(x) === t(ans));
 }
 // ───── answer widgets (kind: venn, chips, clock, bits, grid) and the Venn diagram for q.venn.sets ─────

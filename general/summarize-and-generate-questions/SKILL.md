@@ -906,7 +906,9 @@ generic version.
   {id:4,t:'Mengenlehre',kind:'set',q:'A ∪ D?',a:['{1, 2, 3, 5, 42}'],show:'{1, 2, 3, 5, 42}',e:'…',ref:'2.3'},
   ```
   `num`: compared numerically · `text`: compared after normalising (case,
-  spaces, subscripts like ₁₆, unicode minus, ·/×) · `set`: order and
+  spaces, subscripts like ₁₆, unicode minus, ·/×; commas and semicolons are
+  ignored unless `strict:true`, which code answers need – `#define N 5;` must
+  not count as `#define N 5`) · `set`: order and
   duplicates ignored. `a` lists every accepted spelling, `show` is the
   displayed solution. `ref` = section number; the solution box gets
   „📖 Im Skript nachlesen“ (primary button when wrong) and a „← zurück zum
