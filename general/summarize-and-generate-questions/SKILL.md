@@ -174,6 +174,24 @@ read them (or their text extract) first, tabulate correct-count mix, stem
 forms, option length and archetypes, and follow them wherever they differ from
 the defaults here. Say in the reply what you calibrated on.
 
+### Practice quizzes in a login-gated LMS (ilias, Moodle) – read them from the user's browser
+
+When the course's sample exam questions sit behind a login and the page is
+open in the user's browser, read it as text instead of screenshots (exact and
+cheap). Safari: the user enables Settings > Advanced > "Show features for web
+developers", then Develop > "Allow JavaScript from Apple Events"; then
+`osascript -e 'tell application "Safari" to do JavaScript "document.body.innerText" in tab N of window 1'`
+(list tabs with `get {name, URL} of every tab of every window`). Chrome with
+the Claude-in-Chrome extension works too. Rules: only read; open extra pages
+in a **new tab** and close it afterwards; never click "Finish/Submit test";
+starting a new test pass is an action in the user's account – ask first. In
+ilias, a finished pass's "Detailed Results" lists the questions and types
+(Kprim, Single Answer, Formula, Matching, Cloze); unstarted tests need
+"Start Test", then each question is at `…&cmd=showQuestion&sequence=N&active_id=…`.
+Transcribe everything into `<work>/text/<lms>_quizzes.md` (mark solutions you
+derived yourself as Claude's) and treat them like old tests below. Remind the
+user they can switch the Safari setting off again.
+
 ### Old tests from the same lecture steer the question set
 
 When old tests, exams, mock exams or quizzes **from the same lecture** exist
@@ -544,8 +562,22 @@ as `.alarm.added`, log it in `TO_VERIFY.md` and ask.
      Claude addition. Never correct silently. Note page offsets between `.xopp`
      and PDF (inserted pages).
    - Photos and scans without a text layer: transcribe the same way.
+     Screenshots of e-learning pages inside PDFs (e.g. GoodNotes/iOS exports
+     of classmates): extract the embedded images at full size
+     (`pdfimages -png -p file.pdf dir/i`) and OCR them with the macOS Vision
+     script `scripts/ocr.swift` (`swift ocr.swift dir/*.png > out.ocr.md`,
+     German + English, two-column aware). Far cheaper than viewing each image;
+     look only at diagrams and handwriting yourself. Page renders at 200 dpi
+     work for handwriting, but OCR of handwriting is rough – check visually.
    - `.pptx`/`.docx`: convert with `soffice --headless --convert-to pdf` if
-     LibreOffice is installed, else read them with python-pptx/python-docx.
+     LibreOffice is installed, else run `scripts/extract_office.py ROOT --out
+     <work>` (reads the XML in the zip, no python-pptx needed; slide text,
+     speaker notes, image names, docx tables). Speaker notes can be shifted to
+     the wrong slides after the deck was re-ordered – never trust the
+     note-to-slide mapping blindly, and flag notes that contradict the slide.
+   - A PDF and a .docx with the same document (e.g. a submitted worksheet):
+     diff their text, keep only one as the source (the user asked for this),
+     and note the choice in the sources table.
    - Big textbooks: extract too, but only for lookups.
    - **Cross-check the sources.** When several sets of notes or solutions
      cover the same material (user, classmates, lecturer's solutions), compare
@@ -913,9 +945,21 @@ table most.
 | 12 | Venn / mod clock | `kind:'venn'`, `kind:'clock'` | set expressions, modular arithmetic | (Diskrete Mathematik) |
 | 13 | Writing task | `<div class="tq">` in the summary | write pseudocode or C yourself; hidden solution, self-checked | „Schreibe eine Funktion, die das Maximum eines Feldes (Arrays) liefert.“ |
 | 14 | Mock exam | own topic „Probeprüfung N“ | exam-like mix, input and widget questions only | 3 × ~10 questions |
+| 15 | Kprim table | `kind:'grid'`, one row per statement, `toggle:['zutreffend','nicht zutreffend']` | real K-Prim/ilias style: each of 4 statements judged, 0–4 true allowed | IEEE special values: „E = 1…1, F ≠ 0 → Unendlich“ → nicht zutreffend (Computersysteme) |
+| 16 | Step-by-step cloze | `kind:'grid'`, head `['Schritt','Ergebnis']`, one `'?'` row per intermediate step, alternatives with `\|` | calculation tasks that the exam asks step by step (ilias Cloze): conversions, IEEE 754, two's complement with decimal interpretation | −11,5 → 1011,1 · 1,0111·2³ · 3 · 10000010 · 1 · C1380000 |
+| 17 | Ordering | `kind:'grid'`, rows = shuffled steps, one `'?'` per row, `a` = position numbers | fixed sequences (R3): protocols, cycles, recipes | USB enumeration: erkennen → Kommunikation → Descriptors → Adresse → konfigurieren |
+| 18 | Error hunt | MC single, stem shows a worked solution with one wrong step, options quote the steps | procedure understanding (A1); explanation gives the fixed value and the consequential error | IEEE 6,25: „129 = 1000 0010“ is the first error (→ 40C8 0000) |
+| 19 | Check row | `kind:'grid'` with one row mixing verdicts (`'richtig\|r'`) and numbers/characters | decoding tasks with several outputs (Hamming: each parity bit, error position, character) | 0100 1100 0011 → P2, P4 falsch → Stelle 6 → „C“ |
 
 Rules learned with these formats:
 
+- **The validator's activity check also hits „Übung“/„Übungsblatt“** in an
+  explanation – cite the summary section („siehe 2.11“) instead.
+- **Error hunt:** make the later steps follow from the planted error
+  (consequential error), so only one step is the *first* wrong one.
+- **Kprim table vs. MC Kprim:** the table allows „all false“ and matches
+  ilias exactly; MC with checkboxes needs 1–4 correct. Offer both in the
+  format sample and let the user pick.
 - **Explain the procedure in the stem** when a question asks for the result
   of an algorithm (sieve, desk check, conversion): numbered steps first, then
   the question. The user rejected a sieve question that assumed the method.
