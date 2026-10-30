@@ -101,6 +101,13 @@ harder to answer by pattern-matching the slide text.
   text stays readable. Never let the expansion give away
   the answer — if the question asks what an abbreviation means, leave that one
   unexpanded in the stem/options and expand it in the explanation.
+  This covers standards and compressed jargon too, not only acronyms: never a
+  bare „IEEE-754-Format“, „2er-Kompl.“, „VZ“, „1er“ – write „Gleitkommazahl
+  nach IEEE 754 (Standard für Gleitkommazahlen)“, „Zweierkomplement (negative
+  Zahl = alle Bits invertieren, dann +1)“, „Vorzeichen“. Toggle/matching
+  labels: write the full term without the method in brackets when the
+  bracket would give the answer away. The user asked for this explicitly
+  (Computersysteme, 30.10.2026).
 - **Don't quiz the details of the slides' own examples.** Example cases on
   the slides (a sample product vision like "Rheticus Experience", a case
   study, a demo app) only illustrate a concept — never ask what that specific
