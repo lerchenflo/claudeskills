@@ -79,7 +79,7 @@ def question_bank(raw):
         out.append(f"### Frage {n} · {q['t']} · Typ {q['y']}{extended}\n{strip(q['q'])}")
         if q.get("code"):
             out.append(q["code"])
-        for i, option in enumerate(q["o"]):
+        for i, option in enumerate(q.get("o", [])):
             out.append(f"- [{'x' if i in q['c'] else ' '}] {strip(option)}")
         out.append(f"Erklärung: {strip(q['e'])}\n")
     return ["\n".join(out)]
