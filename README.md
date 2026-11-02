@@ -38,7 +38,7 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 
 ## How the sync works
 
-- `claude-setup` installs a `SessionStart` hook that runs `claude/claude-setup/update-skills.sh`.
+- `claude-setup` offers to install a `SessionStart` hook that runs `claude/claude-setup/update-skills.sh`.
   At most every 6 hours it pulls this repo into `~/.claude/skills-repo` and installs new or
   changed skills into `~/.claude/skills/`.
 - A local skill is only replaced when it still equals the last synced version. Local edits are
@@ -54,7 +54,7 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 
 | Skill | What it does |
 |-------|--------------|
-| `claude-setup` | Sets up Claude Code on a device: global `CLAUDE.md`, status line (context, 5h and weekly limits), model, effort, plugins, skill sync with GitHub, and the auto-update hook. Run it first on every new device. |
+| `claude-setup` | Sets up Claude Code on a device: global `CLAUDE.md`, status line (context, 5h and weekly limits), model, effort, plugins, skill sync with GitHub, and the optional auto-update hook. Asks before it overrides an existing global `CLAUDE.md`. Run it first on every new device. |
 | `caveman` | Compressed reply style that cuts output tokens but keeps full technical accuracy. Levels lite, full, ultra and wenyan variants. |
 | `skill-creator` | Creates and improves skills, runs evals and benchmarks, and tunes skill descriptions so they trigger reliably. |
 

@@ -1,11 +1,13 @@
 ---
 name: claude-setup
-description: Set up Claude Code on this device with the user's personal preferences - writes the global ~/.claude/CLAUDE.md, installs the status line (context, 5h and weekly limits), sets model, effort and plugins, and syncs skills with the GitHub repo lerchenflo/claudeskills, plus a SessionStart hook that pulls skill updates from GitHub. Use on the first launch on a new device, and whenever the user asks to set up, configure, update or restore their Claude preferences or skills on a machine.
+description: Set up Claude Code on this device with the user's personal preferences - writes the global ~/.claude/CLAUDE.md, installs the status line (context, 5h and weekly limits), sets model, effort and plugins, and syncs skills with the GitHub repo lerchenflo/claudeskills, plus an optional SessionStart hook that pulls skill updates from GitHub. Use on the first launch on a new device, and whenever the user asks to set up, configure, update or restore their Claude preferences or skills on a machine.
 ---
 
 # Claude setup
 
 Sets up the user's personal Claude Code preferences on the device this session runs on. Idempotent: run it again any time to bring a device up to date. On a new device run it first, before any other work.
+
+Ask the open questions up front: right after step 0, check what steps 1 and 3 need (5h stop value, CLAUDE.md override, auto-update hook) and ask all questions that apply in one AskUserQuestion call, with the CLAUDE.md difference summary from step 1 written just before it. Then do the steps without asking again.
 
 ## 0. Version
 
@@ -19,7 +21,16 @@ Sets up the user's personal Claude Code preferences on the device this session r
 
 Set the 5h stop once. If `~/.claude/CLAUDE.md` already has the "Always keep <RESERVE>% of the 5h limit free" rule (or the 100 % variant below), keep its value and do not ask. Only when there is none (first setup on this device), ask the user with AskUserQuestion at which 5h usage Claude should stop on its own (header "5h stop", question "At what % of the 5-hour limit should Claude stop work and report?"; options "90 % (Recommended)", 80 %, 95 %, "100 % - never stop on its own"; the user can type any other value). Change the value later only when the user asks for it. Put the answer in for `<STOP>` and `100 - <STOP>` for `<RESERVE>` in the block below. For 100 %, replace the whole "Always keep <RESERVE>% ..." rule with "- Never stop on your own because of the 5h usage; only a cap the user names counts."
 
-Write the block below into `~/.claude/CLAUDE.md`. If the file exists, merge: keep every existing line that is not covered here, replace lines that say the same thing in older words, and never duplicate a rule. Show the user the resulting diff.
+Fill the block below with these values, then compare it with `~/.claude/CLAUDE.md`:
+
+- File missing: write the block. No question.
+- File equals the block: change nothing, say so.
+- File differs: tell the user the differences in a short text - at most 5 plain bullets such as "adds rule X", "rule Y has newer wording", "your file has extra rule Z that the setup version lacks"; no raw diff. Then ask with AskUserQuestion (header "CLAUDE.md", question "Override your global ~/.claude/CLAUDE.md with the setup version?"):
+  - "Merge (Recommended)": keep every existing line that is not covered by the block, replace lines that say the same thing in older words, and never duplicate a rule.
+  - "Override": replace the whole file with the block. Extra local rules are lost, so the summary must name them.
+  - "Keep": leave the file untouched.
+
+After Merge or Override, show the user the resulting diff.
 
 ```markdown
 # Global instructions
@@ -85,7 +96,22 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
   "extraKnownMarketplaces": {
     "caveman": { "source": { "source": "github", "repo": "JuliusBrussee/caveman" } },
     "thedotmack": { "source": { "source": "github", "repo": "thedotmack/claude-mem" } }
-  },
+  }
+}
+```
+
+`attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub - this section is their only source.
+
+### Auto-update hook (optional)
+
+Check `~/.claude/settings.json` for a `SessionStart` entry that runs `update-skills.sh`:
+
+- Installed: keep it, only fix an older matcher (see below). Report it, do not ask.
+- Missing and `~/.claude/state/skills-hook-declined` exists: the user said no on an earlier run. Do not ask; report "auto-update hook: declined earlier". Install it only when the user asks for it, then delete that file.
+- Missing and no decline file: ask with AskUserQuestion (header "Auto-update", question "Install a SessionStart hook that updates your skills from GitHub automatically (at most every 6 hours)?"; options "Yes, install (Recommended)" and "No"). On Yes, merge the entry below. On No, run `mkdir -p ~/.claude/state && touch ~/.claude/state/skills-hook-declined` so later runs do not ask again, and tell the user that skills then update only when they run this skill again or `bash ~/.claude/skills/claude-setup/update-skills.sh --force`.
+
+```json
+{
   "hooks": {
     "SessionStart": [
       {
@@ -99,9 +125,7 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 }
 ```
 
-For `hooks`, append the entry to any existing `SessionStart` list and never add it twice; an existing entry with an older matcher (e.g. only `startup`) gets this one. `startup|resume` because a resumed session (`claude --resume` / `--continue`) is a restart too, and the hook would never run on devices that always resume. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/`. It never overwrites a local copy that has its own changes or a local skill that was never synced; those are printed as conflicts into the session for Claude to merge. A skill deleted or renamed in the repo is removed locally only while the local copy still equals the last synced version. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
-
-`attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub - this section is their only source.
+Append the entry to any existing `SessionStart` list and never add it twice; an existing entry with an older matcher (e.g. only `startup`) gets this one. `startup|resume` because a resumed session (`claude --resume` / `--continue`) is a restart too, and the hook would never run on devices that always resume. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/`. It never overwrites a local copy that has its own changes or a local skill that was never synced; those are printed as conflicts into the session for Claude to merge. A skill deleted or renamed in the repo is removed locally only while the local copy still equals the last synced version. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
 
 ## 4. Skills from GitHub
 
@@ -111,10 +135,10 @@ For `hooks`, append the entry to any existing `SessionStart` list and never add 
    - in both but different: never replace the local copy with the repo version; merge as described in the Skills rules above (keeps every rule from both) and show the user what changed;
    - only local: list them with `bash ~/.claude/skills/claude-setup/local-only-skills.sh` and ask the user (AskUserQuestion, multiSelect) which to upload; never upload without asking. Project-specific skills: say they belong in that project's `.claude/skills/`. Copy the chosen ones into a fitting group folder in the repo and add them to the README skill list; write the others into `~/.claude/state/skills-local-only` (one name per line) so they are not offered again.
 3. If the repo changed, show the user `git -C ~/.claude/skills-repo status --short`, then commit and push once they agree.
-4. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force` once. It records the synced commit, so from then on the hook only installs what changes on GitHub.
+4. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force` once. It records the synced commit, so from then on the hook (if installed) only installs what changes on GitHub.
 
 Skip `~/.claude/skills/synced/` (Anthropic's built-in skills, managed by the app) everywhere and never put a `settings.json` into a skills folder.
 
 ## 5. Report
 
-List what changed on this device (5h stop value, CLAUDE.md diff, status line installed or updated, settings and hook merged, skills copied/merged/pushed) and anything skipped. End with the skills version now on this device (`git -C ~/.claude/skills-repo log -1 --format='%h %cs %s'`) and whether it matches the latest commit on GitHub.
+List what changed on this device (5h stop value, CLAUDE.md choice - merged, overridden or kept - and its diff, status line installed or updated, settings merged, auto-update hook installed / already there / declined, skills copied/merged/pushed) and anything skipped. End with the skills version now on this device (`git -C ~/.claude/skills-repo log -1 --format='%h %cs %s'`) and whether it matches the latest commit on GitHub.
