@@ -22,6 +22,9 @@
 //  - no in-class activities/exercises in stem or explanation ("Activity 3", "Mini-Aktivität" …)
 //  - optional `x: 1` marks an extended-mode question (same concept, new example); every topic
 //    with extended questions must also have core questions
+// Warnings (printed, build continues):
+//  - a wrong MC option or a wrong chip is not named in the explanation – every explanation
+//    must say why each wrong answer is wrong (heuristic: the option text, or its words)
 const fs = require('fs');
 // flags: --mix  = enforce the correct-count mix (only for courses whose real exams show it, e.g. SE: 55/30/15)
 //        --link = every question needs `ref` (learning page: wrong answer links to the summary section)
@@ -31,7 +34,7 @@ const MIX = flags.includes('--mix'), LINK = flags.includes('--link');
 const [qf, tf, out] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const qs = fs.readFileSync(qf, 'utf8');
 eval(qs.replace('const QUESTIONS', 'globalThis.QUESTIONS'));
-const err = [];
+const err = [], warn = [];
 const seen = new Set(), ids = new Set();
 const strip = s => String(s).replace(/<[^>]+>/g, '');
 const LETTER = /(^|[\s(„"/])[A-D](?=[\s)\/,:;=–.]|$)/;
@@ -41,6 +44,16 @@ const SINGLE = /welche eine\b|die einzige|genau eine/i;
 const SUPERLATIVE = /am (besten|ehesten|deutlichsten|unmittelbarsten|wichtigsten|stärksten)|hauptsächlich/i;
 const SLASH = /\w\/(n|en|e|r|s|t)\b/;
 const SINGULAR = /^(Welcher|Welches)\s/;
+// heuristic: is option text `opt` named in explanation `e`? whole text, else its words
+const normT = s => strip(s).toLowerCase().replace(/&[a-z]+;/g, ' ').replace(/[„“"'`.,;:!?()\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+const mentioned = (opt, e) => {
+  const o = normT(opt), en = ` ${normT(e)} `;
+  if (!o || en.includes(` ${o} `)) return true;
+  const ew = new Set(en.trim().split(' ')), ow = o.split(' ');
+  if (ow.length <= 3) return ow.every(w => ew.has(w));
+  const content = ow.filter(w => w.length >= 4), pool = content.length ? content : ow;
+  return pool.filter(w => ew.has(w)).length * 2 >= pool.length;
+};
 const PLURAL_VERB = /\b(sind|treffen|werden|gehören|beschreiben|passen|erklären|entsprechen|zählen)\b/;
 QUESTIONS.forEach((x, i) => {
   const n = `#${i + 1} (id ${x.id})`;
@@ -52,6 +65,8 @@ QUESTIONS.forEach((x, i) => {
     if (x.kind === 'clock' && !(x.clock && Number.isInteger(x.clock.n) && +x.a[0] >= 0 && +x.a[0] < x.clock.n)) err.push(`${n}: clock needs clock.n and an answer 0..n-1`);
     if (x.kind === 'bits' && !(Number.isInteger(x.bits) && /^[01]+$/.test(x.a[0]) && x.a[0].length === x.bits)) err.push(`${n}: bits answer must be a 0/1 string of length bits`);
     if (x.kind === 'grid' && !(x.grid && Array.isArray(x.grid.rows) && x.grid.rows.flat().filter(c => c === '?').length === (x.a || []).length)) err.push(`${n}: grid: number of '?' cells must equal a.length`);
+    if (x.kind === 'chips' && Array.isArray(x.chips)) x.chips.filter(v => !(x.a || []).includes(v) && !mentioned(v, x.e || ''))
+      .forEach(v => warn.push(`${n}: wrong chip „${strip(v)}“ not explained in e`));
     if (['venn', 'chips', 'grid'].includes(x.kind) && !x.show) err.push(`${n}: ${x.kind} question needs show (solution text)`);
     if (!Array.isArray(x.a) || !x.a.length) err.push(`${n}: input question needs a non-empty answer array a`);
     if (x.kind === 'num' && Array.isArray(x.a) && x.a.some(v => !/^-?[\d.,]+$/.test(String(v)))) err.push(`${n}: num answers must be plain numbers`);
@@ -78,6 +93,7 @@ QUESTIONS.forEach((x, i) => {
   if (LETTER.test(eL)) err.push(`${n}: explanation references an option by letter: ${x.e.slice(0, 80)}`);
   if (POSITION.test(e)) err.push(`${n}: explanation references options by position (erste/letzte …): ${e.match(POSITION)[0]}`);
   if (BAN.test(x.q)) err.push(`${n}: who/when/source question`);
+  if (Array.isArray(x.o) && Array.isArray(c)) x.o.forEach((o, k) => { if (!c.includes(k) && !mentioned(o, x.e || '')) warn.push(`${n}: wrong option „${strip(o).slice(0, 60)}“ not explained in e`); });
   if (/aktivität|activity|übung|mini-akt/i.test(x.q + ' ' + x.e)) err.push(`${n}: mentions an in-class activity/exercise`);
   const stem = strip(x.q).replace(/„[^“]*“/g, '');
   if (SINGLE.test(stem)) err.push(`${n}: stem demands exactly one answer: ${x.q.slice(0, 80)}`);
@@ -107,6 +123,7 @@ if (singles.length >= 10 && longestRight > 0.4 * singles.length)
   err.push(`length cue: the correct option is the longest in ${longestRight}/${singles.length} single-answer questions; keep options parallel in length (≤ 40 %)`);
 const coreTopics = new Set(core.map(x => x.t));
 [...new Set(QUESTIONS.filter(x => x.x).map(x => x.t))].forEach(t => { if (!coreTopics.has(t)) err.push(`topic "${t}" has extended questions but no core questions`); });
+if (warn.length) console.warn(`WARN ${warn.length}× a wrong answer is not explained (say why each wrong option/chip is wrong):\n` + warn.join('\n'));
 if (err.length) { console.error(err.join('\n')); process.exit(1); }
 const t = fs.readFileSync(tf, 'utf8');
 if (!t.includes('/*__QUESTIONS__*/')) { console.error('template has no /*__QUESTIONS__*/ marker'); process.exit(1); }
