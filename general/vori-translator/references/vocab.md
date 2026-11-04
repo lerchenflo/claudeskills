@@ -1,4 +1,4 @@
-# Schneaggchat Vori vocabulary
+# Vori vocabulary
 
 One row per word or phrase the translator has settled. Don't read it top to
 bottom: `vori_strings.py lookup WORD` searches it together with both Vori files,
@@ -72,7 +72,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | Zeichen | Zeicha | Zeichen | |
 | Feld | Feald | Feld | |
 | Spalte | Spalte | Spalta | also after ihra/da ("vo ihra Spalte"); "Spalta" was a hand-fix slip, user confirmed 2026-10-28 |
-| Haus / nach Hause | Hus / huam | ham | "gang ham" in the Undercover rules is on purpose |
+| Haus / nach Hause | Hus / huam | ham | "ham" inside a joke string the project add-on lists is on purpose |
 | Schnecken | Schneagga | Schnecken | |
 | Werkzeuge | Werkzüg | Werkzeuge | |
 | Geld | Geald | Geld | |
@@ -226,4 +226,4 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | Lass uns zurück zu den Einstellungen gehen | Gomma zruck zu da Einstellunga | | |
 | Erfolgreich … | (usually dropped: "Usgloggt") | | |
 | Keine Ahnung | Keine Ahnung (stand-alone reply) / kua Ahnung (inside a sentence) | | |
-| Heißluftballon / Schneagg-Rakete | Heißluftballo / Rakete (button: Raketa) | | on purpose, don't fix |
+| Heißluftballon | Heißluftballo | | |

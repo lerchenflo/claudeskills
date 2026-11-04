@@ -25,8 +25,8 @@ Commands:
 Global options:
   --res DIR   the app's composeResources dir (auto-detected otherwise)
   --i18n DIR  a flat dir with strings-en.xml / strings-de.xml / strings-de-at.xml
-              instead (the website texts of the server repo, e.g.
-              SchneaggchatV3server/src/main/resources/static/i18n). Auto-detected
+              instead (the website texts of a server repo, e.g.
+              src/main/resources/static/i18n). Auto-detected
               when no app resources are found below the cwd.
 Stdlib only. Edits are textual so formatting/comments of the AT file survive.
 """
@@ -106,7 +106,7 @@ def i18n_paths(d):
 
 def find_i18n_dir(start):
     for root, dirs, files in os.walk(start):
-        dirs[:] = [d for d in dirs if d not in (".git", "build", ".gradle", "node_modules", ".idea", "mongodb_data")]
+        dirs[:] = [d for d in dirs if d not in (".git", "build", ".gradle", "node_modules", ".idea") and not d.endswith("_data")]
         if "strings-de-at.xml" in files and "strings-en.xml" in files:
             return root
     return None

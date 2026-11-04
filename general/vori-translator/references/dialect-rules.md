@@ -1,4 +1,4 @@
-# Vorarlbergerisch ("Vori") – rules as used in Schneaggchat
+# Vorarlbergerisch ("Vori") – rules
 
 Vorarlberg Alemannic (Unterland/Rheintal), **not** Viennese or Bavarian: never
 "ned wahr", "Oida", "geh bitte", "-erl", "is" for "ist", "net". There is no
@@ -112,24 +112,22 @@ Always informal **du**, never "Sie" (also not where the DE source uses it).
 * Loanwords and app terms: App, Chat, Account, E-Mail (always hyphenated), Event,
   Admin, Server, Feature, Bug, Highscores, Recap, Challenge, Link, Logs, Theme,
   Markdown, Emojis, Tour, Status, Profilbild, Passwort, Freund(e), Gruppe.
-* Brand/feature names: Schneaggchat, Schneaggmap, Schneagg/Schneagga, Wordle,
-  Yahtzee, Tetris, Undercover, Mr. White. Programming terms (Anweisung,
-  Syntaxfehler, Semikolon).
-* In-game names (vehicles, items, power-ups) are localised freely
-  (Milchlaster → Milchlastwaga, Free Candy Bus → Ghettobus): propose a Vori name
-  and flag it as a suggestion.
+* Brand, feature and game names of the app (the project add-on lists them).
+  Programming terms (Anweisung, Syntaxfehler, Semikolon).
+* In-game names (vehicles, items, power-ups) are localised freely: propose a
+  Vori name and flag it as a suggestion (examples in the project add-on).
 * Identical to DE is often correct (Chats, Status, Event) – not untranslated by default.
 
 ## 6. Tone and register
 
 * Casual, short, spoken; shorter than DE is normal ("Account wird glada ...").
-* Humour in fun places (games, Recap, empty states, rodeo): "Abhaua" for
+* Humour in fun places (games, recaps, empty states): "Abhaua" for
   "Gruppe verlassen", light teasing of the player. Never insult real groups.
 * Precise where consequences matter (deleting, account, password, e-mail,
   privacy, permissions, errors, irreversible actions): keep every fact from
   EN/DE – what is deleted, for whom, whether it can be undone.
 * Game instructions: keep the controls and the goal, drop vivid detail that is
-  neither (rodeo: "wenn se di erwischand, isch s End vom Ritt"). No gore.
+  neither (e.g. "wenn se di erwischand, isch s End vom Ritt"). No gore.
 
 ## 7. Mechanical rules
 

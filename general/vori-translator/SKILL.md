@@ -1,20 +1,27 @@
 ---
 name: vori-translator
-description: Translates and reviews Vorarlbergerisch ("Vori", Vorarlberg Alemannic dialect) string resources in values-de-rAT/strings.xml of a Compose Multiplatform / Android app such as Schneaggchat, and in the server's website texts (strings-de-at.xml in SchneaggchatV3server/src/main/resources/static/i18n). It fills keys that are missing compared to the English values/strings.xml, translates new or changed English/German strings into Vori, and lints the existing de-rAT file for typos, spelling drift, Standard-German leftovers, broken placeholders and translations whose meaning no longer matches EN/DE. Use this skill whenever the user mentions de-rAT, values-de-rAT, strings-de-at, server/website texts, Vori, Vorarlbergerisch, Austrian or dialect strings, "Schneaggchat translations", missing Austrian keys, or asks how something would be said in Vorarlberg dialect, even if they don't name the skill. Writes translations straight into the file for the user to review with git diff, then compares the user's hand-corrections with its draft and folds the patterns back into the skill.
+description: Translates and reviews Vorarlbergerisch ("Vori", Vorarlberg Alemannic dialect) string resources in values-de-rAT/strings.xml of a Compose Multiplatform / Android app, and in a server's website texts (strings-de-at.xml next to strings-en.xml and strings-de.xml). It fills keys that are missing compared to the English values/strings.xml, translates new or changed English/German strings into Vori, and lints the existing de-rAT file for typos, spelling drift, Standard-German leftovers, broken placeholders and translations whose meaning no longer matches EN/DE. Use this skill whenever the user mentions de-rAT, values-de-rAT, strings-de-at, server/website texts, Vori, Vorarlbergerisch, Austrian or dialect strings, dialect app translations, missing Austrian keys, or asks how something would be said in Vorarlberg dialect, even if they don't name the skill. Writes translations straight into the file for the user to review with git diff, then compares the user's hand-corrections with its draft and folds the patterns back into the skill.
 ---
 
 # Vori translator (values-de-rAT + website strings-de-at)
 
-The `values-de-rAT` locale of Schneaggchat is **Vorarlbergerisch**, written the
-way people from the Rheintal text each other – not Austrian Standard German. A
-human maintains it by hand, so the project's CLAUDE.md forbids Claude to edit
-it on its own. This skill is the exception: the user invoked it, so you write
-your translations **straight into the file**, the user fixes them by hand, and
-you learn from the fixes. The translator owns the voice.
+Here the `values-de-rAT` locale is **Vorarlbergerisch**, written the way people
+from the Rheintal text each other – not Austrian Standard German. A human
+maintains it by hand, and the project's CLAUDE.md may forbid Claude to edit it
+on its own. This skill is the exception: the user invoked it, so you write your
+translations **straight into the file**, the user fixes them by hand, and you
+learn from the fixes. The translator owns the voice.
+
+**Project add-on:** if the project or its sibling repo (app ↔ server) has a
+project skill `<project>-vori` in `.claude/skills/`, read it first. It holds
+everything project-specific: file locations, brand and feature names that stay
+unchanged, strings with deliberate jokes, in-game names and tone per feature.
 
 ## Files
 
-| | App (`composeApp/src/commonMain/composeResources/`) | Website (`SchneaggchatV3server/src/main/resources/static/i18n/`) |
+Found automatically below the current folder (or pass `--res` / `--i18n`):
+
+| | App (`composeResources/` or `res/`) | Website (flat i18n folder, e.g. `src/main/resources/static/i18n/`) |
 |---|---|---|
 | EN – which keys exist | `values/strings.xml` | `strings-en.xml` |
 | DE – wording | `values-de/strings.xml` | `strings-de.xml` (formal "Sie" – Vori still uses "du") |
@@ -37,7 +44,7 @@ also read the Vori file of the sibling repo.
 |---|---|
 | `missing` | keys in EN but not in AT, with EN + DE text |
 | `show k1 k2` | EN / DE / AT side by side |
-| `dump --prefix games_ [--diff-only/--same-only]` | review a feature in bulk |
+| `dump --prefix <feature>_ [--diff-only/--same-only]` | review a feature in bulk |
 | `lookup wort …` | vocab rows + every Vori string with a word starting with it (a stem like `diskut` finds all forms) |
 | `check draft.json` | vocab avoid forms, Standard-German leftovers, placeholders, `\n`, spaces, and words no Vori file has used yet |
 | `insert draft.json [--replace]` | runs `check`, then writes into AT after the nearest EN predecessor; refuses placeholder mismatches |
@@ -56,7 +63,8 @@ Keep the draft JSON in the session scratchpad until the learning loop is done.
    sometimes outdated or machine-translated). `lookup` every content word you
    haven't seen spelled in this session; reuse the file's spelling even if you
    think another is "correct". Tone: precise where consequences matter, loose
-   in games/Recap/empty states; game instructions keep controls and goal.
+   in fun places (games, recaps, empty states); game instructions keep controls
+   and goal.
 4. Run `check draft.json` and work through every section:
    - **Use the vocab form** and **Standard-German leftovers**: fix them.
    - **Copied from DE, not in any Vori file**: a word you probably forgot to
@@ -94,9 +102,8 @@ When the user says they fixed the strings, do this without being asked again:
    describes behaviour EN/DE no longer describe (users get wrong information).
 3. Report by severity: breaks build/crashes → wrong or misleading information →
    typos and inconsistencies → style (optional), each with a concrete
-   replacement. Deliberate jokes stay: the Undercover rules texts
-   (`undercover_rules_*_text`, e.g. "gang ham") get typo fixes only – their
-   lint warnings are expected. Older strings flagged as "old forms" are fixed
+   replacement. Deliberate jokes stay: strings the project add-on
+   lists as jokes get typo fixes only – their lint warnings are expected. Older strings flagged as "old forms" are fixed
    only when the user asks. Call out a joke only if it drops information.
 4. After approval apply the fixes with `insert --replace` (or Edit for single
    strings). Keys no longer in EN may be deleted from AT without asking.
