@@ -11,7 +11,7 @@ Sets up the user's personal Claude Code preferences on the device this session r
 
 Start every run with a to-do list, before any command that changes something. Use the session's task / to-do tool when there is one; otherwise write a numbered checklist in the reply. List every step below (0-5) with the sub-steps that apply on this device, the questions to ask included. Show the list, then work through it in order: mark each item in progress and done, add items that a check turns up (e.g. a skill conflict to merge), and do no work that is not on the list. Step 0 can replace this skill with a newer version: then rebuild the list from the new version. The report (step 5) goes through the list item by item.
 
-Ask the open questions up front: right after step 0, check what steps 1 and 3 need (5h stop value, CLAUDE.md override, skill update mode) and ask all questions that apply in one AskUserQuestion call, with the CLAUDE.md difference summary from step 1 written just before it. Then do the steps without asking again.
+Ask every question with AskUserQuestion, never as plain text (see the global rules below). Ask the open questions up front: right after step 0, check what steps 1 and 3 need (5h stop value, CLAUDE.md override, skill update mode) and ask all questions that apply in one AskUserQuestion call, with the CLAUDE.md difference summary from step 1 written just before it. Then do the steps without asking again.
 
 ## 0. Version
 
@@ -43,6 +43,7 @@ After Merge or Override, show the user the resulting diff.
 - When the user asks about progress ("how far along are you", "status?", "wie weit bist du"), always answer with a percentage of the current task or plan that is done (best estimate), then one short line on what is done and what comes next.
 - During longer tasks (several steps, a plan, multi-file work), report progress on your own every few steps, without being asked: one short line with the percentage of the task done (best estimate), e.g. "25% done - X finished, next Y". Keep the same scale for the whole task so the numbers only go up.
 - Never assume. When a requirement, design choice or behaviour is unclear and the answer changes what you build, ask the user with the interview tool (AskUserQuestion) before acting - don't pick a default and only mention it afterwards. This matters most in bigger work (features, plans, multi-file changes): collect the open questions up front and ask them together. Only skip asking for facts you can check yourself (code, docs, tools).
+- Ask every open question with the interview tool (AskUserQuestion), never as plain text in a reply. This includes yes/no confirmations, "should I ...?" offers at the end of a reply, and choices between options or next steps. Put the needed context into each question, because the user may see only the question dialog. Plain text is for results and reports only.
 - Always use the `caveman` skill at level **full** for every reply, in every session, unless the user says "stop caveman" or "normal mode".
 
 ## Usage limits
@@ -140,7 +141,7 @@ What the hook does: at most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in se
    - only in the repo: copy it into `~/.claude/skills/` (nothing local is touched);
    - in both but different: never replace the local copy with the repo version; merge as described in the Skills rules above (keeps every rule from both) and show the user what changed;
    - only local: list them with `bash ~/.claude/skills/claude-setup/local-only-skills.sh` and ask the user (AskUserQuestion, multiSelect) which to upload; never upload without asking. Project-specific skills: say they belong in that project's `.claude/skills/`. Copy the chosen ones into a fitting group folder in the repo and add them to the README skill list; write the others into `~/.claude/state/skills-local-only` (one name per line) so they are not offered again.
-3. If the repo changed, show the user `git -C ~/.claude/skills-repo status --short`, then commit and push once they agree.
+3. If the repo changed, show the user `git -C ~/.claude/skills-repo status --short`, then ask with AskUserQuestion whether to commit and push; do it only on yes.
 4. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force --mode auto` once, after the user has seen the changes from 2. It records the synced commit, so from then on the hook (if installed) only reports or installs what changes on GitHub.
 
 Skip `~/.claude/skills/synced/` (Anthropic's built-in skills, managed by the app) everywhere and never put a `settings.json` into a skills folder.
