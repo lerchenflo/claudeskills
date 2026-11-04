@@ -9,10 +9,12 @@ Claude Code skills, shared publicly. The owner uses this repo to keep the skills
 > shared as they are, without warranty. Read a skill before you install it, and adapt or skip
 > whatever does not fit you.
 
-## First launch: run `claude-setup`
+## First launch: run `claude-setup` (required)
 
-On a new device, or on the first launch after cloning, run the `claude-setup` skill before
-anything else. It:
+**After cloning, start Claude Code and run `/claude-setup` first, before you use any other skill.**
+The repo is built around it: it installs the skills into `~/.claude/skills/`, sets the skill
+update mode and writes the global rules the skills rely on. It shows a to-do list first and asks
+before it changes your configuration. It:
 
 - shows which skills version (commit) the device runs and the latest one on GitHub, and updates
   itself first if GitHub is newer;
@@ -134,8 +136,8 @@ Based on skills by Philipp Lackner, changed a bit.
 
 ## Contributing
 
-Anyone, human or AI agent, may open issues and pull requests: new skills, improvements, or fixes
-for anything that is broken. Only the owner (@lerchenflo) merges; nobody else gets write access.
+Anyone may open issues and pull requests, also with the help of an AI agent: new skills,
+improvements, or fixes for anything that is broken. Only the owner (@lerchenflo) merges; nobody else gets write access.
 
 Forks are welcome, but they are meant to be merged back: open a pull request against this repo
 so that all users profit from the changes.
