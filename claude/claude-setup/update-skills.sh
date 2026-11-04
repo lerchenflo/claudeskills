@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # Pulls the skills repo from GitHub and installs new or changed skills into ~/.claude/skills.
 # Meant to run as a SessionStart hook: it checks GitHub at most once per CLAUDE_SKILLS_CHECK_INTERVAL seconds, and whatever it
-# prints is added to Claude's context.
+# prints is added to Claude's context. It prints facts only (what changed), never instructions; what Claude does with
+# them is set in the user's global CLAUDE.md.
 #
-# Usage: update-skills.sh [--force] [repo-dir]
-#   --force    check now, ignoring the interval
-#   repo-dir   local clone to use (default ~/.claude/skills-repo, cloned on first run)
+# Usage: update-skills.sh [--force] [--mode auto|review] [repo-dir]
+#   --force        check now, ignoring the interval
+#   --mode auto    install new and changed skills (default, the behaviour of older setups)
+#   --mode review  only report which skills changed; install nothing (run again with --mode auto to install)
+#   repo-dir       local clone to use (default ~/.claude/skills-repo, cloned on first run)
 #
 # Repo layout is <group>/<skill>/SKILL.md; skills are installed flat as ~/.claude/skills/<skill>/.
 # A local skill is only overwritten when it still equals the version from the last sync, so
@@ -23,13 +26,20 @@ STATE_DIR="$HOME/.claude/state"
 STAMP="$STATE_DIR/skills-update-check"
 INSTALLED="$STATE_DIR/skills-installed-commit"
 
-force=0
+force=0 mode=auto want_mode=0
 for arg in "$@"; do
+  if [ "$want_mode" = 1 ]; then mode="$arg" want_mode=0; continue; fi
   case "$arg" in
     --force) force=1 ;;
+    --mode) want_mode=1 ;;
+    --mode=*) mode="${arg#--mode=}" ;;
     *) REPO_DIR="$arg" ;;
   esac
 done
+case "$mode" in
+  auto | review) ;;
+  *) echo "Skills update: unknown mode '$mode' (expected auto or review); nothing checked."; exit 0 ;;
+esac
 
 mkdir -p "$STATE_DIR"
 now=$(date +%s)
@@ -49,8 +59,8 @@ else
   git -C "$REPO_DIR" fetch --quiet origin 2>/dev/null || exit 0
   branch=$(git -C "$REPO_DIR" rev-parse --abbrev-ref HEAD)
   if ! git -C "$REPO_DIR" merge --ff-only --quiet "origin/$branch" >/dev/null 2>&1; then
-    echo "Skills update: $REPO_DIR cannot fast-forward to origin/$branch (local commits or changes)." \
-      "Run 'git -C $REPO_DIR pull --rebase', resolve, push, then 'bash $0 --force'."
+    echo "Skills update: $REPO_DIR cannot fast-forward to origin/$branch (it has local commits or changes)." \
+      "Nothing was installed. Fix: git -C $REPO_DIR pull --rebase"
     exit 0
   fi
 fi
@@ -84,11 +94,11 @@ for skill_md in "$tmp"/new/*/*/SKILL.md; do
 
   dst="$SKILLS_DIR/$name"
   if [ ! -e "$dst" ]; then
-    cp -R "$new_dir" "$dst" && added="$added $name"
+    if [ "$mode" = review ]; then added="$added $name"; else cp -R "$new_dir" "$dst" && added="$added $name"; fi
   elif same "$dst" "$new_dir"; then
     :
   elif [ -n "$old_dir" ] && same "$dst" "$old_dir"; then
-    rm -rf "$dst" && cp -R "$new_dir" "$dst" && updated="$updated $name"
+    if [ "$mode" = review ]; then updated="$updated $name"; else rm -rf "$dst" && cp -R "$new_dir" "$dst" && updated="$updated $name"; fi
   else
     conflicts="$conflicts
   - $dst (repo version: $REPO_DIR/$group/$name)"
@@ -106,26 +116,34 @@ for skill_md in "$tmp"/old/*/*/SKILL.md; do
   dst="$SKILLS_DIR/$name"
   [ -e "$dst" ] || continue
   if same "$dst" "$old_dir"; then
-    rm -rf "$dst" && removed="$removed $name"
+    if [ "$mode" = review ]; then removed="$removed $name"; else rm -rf "$dst" && removed="$removed $name"; fi
   else
     conflicts="$conflicts
   - $dst was removed or renamed in the repo but has local changes (merge them into the renamed skill or keep it)"
   fi
 done
 
-# Only remember this commit once everything is in place, so open conflicts are reported again next time.
-[ -z "$conflicts" ] && echo "$head" >"$INSTALLED"
+# Only remember this commit once everything is in place (auto mode, no conflicts), so open items are reported again next time.
+[ "$mode" = auto ] && [ -z "$conflicts" ] && echo "$head" >"$INSTALLED"
 
+list() { echo "$1" | tr ' ' '\n' | sort -u | tr '\n' ' '; }
 if [ -n "$added$updated$removed$conflicts" ]; then
-  echo "Skills update from GitHub ($(git -C "$REPO_DIR" log -1 --format='%h %s')):"
-  [ -n "$added" ] && echo "- installed:$(echo "$added" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
-  [ -n "$updated" ] && echo "- updated:$(echo "$updated" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
-  [ -n "$removed" ] && echo "- removed (deleted or renamed in the repo):$(echo "$removed" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
-  if [ -n "$conflicts" ]; then
-    echo "- not overwritten, the local copy has changes that are not in the repo:$conflicts"
-    echo "  Merge each pair (keep every rule from both, newest wording wins), write the result to the" \
-      "local copy and the repo, commit and push, then run 'bash $0 --force'. Tell the user what was merged."
+  latest=$(git -C "$REPO_DIR" log -1 --format='%h %s')
+  if [ "$mode" = review ]; then
+    installed="never synced"
+    [ -n "$base" ] && installed=$(git -C "$REPO_DIR" log -1 --format=%h "$base")
+    echo "Skill updates available on GitHub (review mode, nothing installed). Installed: $installed. GitHub: $latest."
+    [ -n "$added" ] && echo "- new:$(list "$added")"
+    [ -n "$updated" ] && echo "- changed:$(list "$updated")"
+    [ -n "$removed" ] && echo "- deleted or renamed in the repo:$(list "$removed")"
+    [ -n "$conflicts" ] && echo "- local copy differs from the repo (never overwritten):$conflicts"
+    echo "Install command: bash $0 --force --mode auto"
+  else
+    echo "Skills update from GitHub ($latest):"
+    [ -n "$added" ] && echo "- installed:$(list "$added")"
+    [ -n "$updated" ] && echo "- updated:$(list "$updated")"
+    [ -n "$removed" ] && echo "- removed (deleted or renamed in the repo):$(list "$removed")"
+    [ -n "$conflicts" ] && echo "- not overwritten, the local copy has changes that are not in the repo:$conflicts"
   fi
-  echo "Tell the user which skills changed."
 fi
 exit 0

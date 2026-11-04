@@ -1,13 +1,17 @@
 ---
 name: claude-setup
-description: Set up Claude Code on this device with the user's personal preferences - writes the global ~/.claude/CLAUDE.md, installs the status line (context, 5h and weekly limits), sets model, effort and plugins, and syncs skills with the GitHub repo lerchenflo/claudeskills, plus an optional SessionStart hook that pulls skill updates from GitHub. Use on the first launch on a new device, and whenever the user asks to set up, configure, update or restore their Claude preferences or skills on a machine.
+description: Set up Claude Code on this device with the user's personal preferences - writes the global ~/.claude/CLAUDE.md, installs the status line (context, 5h and weekly limits), sets model and effort, and syncs skills with the GitHub repo lerchenflo/claudeskills, plus a SessionStart hook for skill updates whose mode the user picks (review first, auto-install or off). Starts with a to-do list of every step and works through it. Use on the first launch on a new device, and whenever the user asks to set up, configure, update or restore their Claude preferences or skills on a machine.
 ---
 
 # Claude setup
 
 Sets up the user's personal Claude Code preferences on the device this session runs on. Idempotent: run it again any time to bring a device up to date. On a new device run it first, before any other work.
 
-Ask the open questions up front: right after step 0, check what steps 1 and 3 need (5h stop value, CLAUDE.md override, auto-update hook) and ask all questions that apply in one AskUserQuestion call, with the CLAUDE.md difference summary from step 1 written just before it. Then do the steps without asking again.
+## To-do list first
+
+Start every run with a to-do list, before any command that changes something. Use the session's task / to-do tool when there is one; otherwise write a numbered checklist in the reply. List every step below (0-5) with the sub-steps that apply on this device, the questions to ask included. Show the list, then work through it in order: mark each item in progress and done, add items that a check turns up (e.g. a skill conflict to merge), and do no work that is not on the list. Step 0 can replace this skill with a newer version: then rebuild the list from the new version. The report (step 5) goes through the list item by item.
+
+Ask the open questions up front: right after step 0, check what steps 1 and 3 need (5h stop value, CLAUDE.md override, skill update mode) and ask all questions that apply in one AskUserQuestion call, with the CLAUDE.md difference summary from step 1 written just before it. Then do the steps without asking again.
 
 ## 0. Version
 
@@ -65,7 +69,7 @@ After Merge or Override, show the user the resulting diff.
 - Never overwrite or delete an existing skill in `~/.claude/skills/` with a repo version without asking the user. Merging (keep every rule from both) is fine; replacing is not.
 - Write skills in English by default (SKILL.md, scripts, code comments, templates, file names), even when the user writes in another language. Only content that must be in another language stays in it (quoted exam examples, UI labels of a course in that language); say so in the skill.
 - Project-specific skills (named after or only useful for one project) stay in that project's `.claude/skills/`, never in `~/.claude/skills/` or the repo.
-- A SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) pulls new skill versions from GitHub. If it reports a conflict (the skill was changed both here and on another device), do not overwrite blindly: merge both versions (keep every rule from both, newest wording wins on conflicts), write the merged result to both places, push, and tell the user what was merged.
+- A SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) checks GitHub for new skill versions; its mode (review, auto or off) is set by `claude-setup`. Review mode: when it reports available updates, tell the user which skills changed with a short summary of each diff (`git -C ~/.claude/skills-repo diff <installed>..HEAD -- <group>/<skill>`), and install only after the user agrees (`bash ~/.claude/skills/claude-setup/update-skills.sh --force --mode auto`). Auto mode: tell the user which skills were installed or updated. If it reports a conflict (the skill was changed both here and on another device), do not overwrite blindly: merge both versions (keep every rule from both, newest wording wins on conflicts), write the merged result to both places, push, and tell the user what was merged.
 ```
 
 ## 2. Status line
@@ -88,27 +92,27 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 {
   "model": "opus",
   "effortLevel": "xhigh",
-  "attribution": { "commit": "", "pr": "" },
-  "enabledPlugins": {
-    "caveman@caveman": true,
-    "claude-mem@thedotmack": true
-  },
-  "extraKnownMarketplaces": {
-    "caveman": { "source": { "source": "github", "repo": "JuliusBrussee/caveman" } },
-    "thedotmack": { "source": { "source": "github", "repo": "thedotmack/claude-mem" } }
-  }
+  "attribution": { "commit": "", "pr": "" }
 }
 ```
 
-`attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Plugins are installed on the next start from these marketplaces; tell the user to restart Claude Code. Settings are not synced via GitHub - this section is their only source.
+`attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Settings are not synced via GitHub - this section is their only source.
 
-### Auto-update hook (optional)
+The setup installs no plugins: `caveman` comes as a skill from the repo. Older versions of this setup enabled the plugins `caveman@caveman` and `claude-mem@thedotmack` (with their marketplaces). Leave them as they are unless the user asks, but name them in the report; for `claude-mem`, also say that its worker needs the Bun runtime and records nothing without it (check `~/.claude-mem/logs/` for "Bun runtime not found").
 
-Check `~/.claude/settings.json` for a `SessionStart` entry that runs `update-skills.sh`:
+### Skill update mode (SessionStart hook)
 
-- Installed: keep it, only fix an older matcher (see below). Report it, do not ask.
-- Missing and `~/.claude/state/skills-hook-declined` exists: the user said no on an earlier run. Do not ask; report "auto-update hook: declined earlier". Install it only when the user asks for it, then delete that file.
-- Missing and no decline file: ask with AskUserQuestion (header "Auto-update", question "Install a SessionStart hook that updates your skills from GitHub automatically (at most every 6 hours)?"; options "Yes, install (Recommended)" and "No"). On Yes, merge the entry below. On No, run `mkdir -p ~/.claude/state && touch ~/.claude/state/skills-hook-declined` so later runs do not ask again, and tell the user that skills then update only when they run this skill again or `bash ~/.claude/skills/claude-setup/update-skills.sh --force`.
+Each device picks how it gets skill updates from GitHub. Check `~/.claude/settings.json` for a `SessionStart` entry that runs `update-skills.sh`, and `~/.claude/state/skills-update-mode`:
+
+- Entry with `--mode review` or `--mode auto`: keep it (only fix an older matcher, see below). Report the mode, do not ask.
+- Entry without `--mode` (older setup; it behaves like auto): ask the question below once and rewrite the entry with the chosen mode.
+- No entry and the mode file says `off` (or the older `~/.claude/state/skills-hook-declined` exists): report "skill updates: off", do not ask.
+- No entry and no mode file: ask with AskUserQuestion (header "Updates", question "How should this device get skill updates from GitHub (lerchenflo/claudeskills)?"):
+  - "Review first (Recommended)": the hook checks GitHub at most every 6 hours and only reports which skills changed. Nothing is installed until the user agrees.
+  - "Auto-install": the hook installs new and changed skills on its own. Local edits are never overwritten.
+  - "Off": no hook. Skills update only when this skill runs again (or with `update-skills.sh --force --mode auto`).
+
+Store the answer: review or auto - merge the entry below with that mode and write the mode into `~/.claude/state/skills-update-mode`; off - write `off` there and remove an existing entry. Change the mode later only when the user asks.
 
 ```json
 {
@@ -117,7 +121,7 @@ Check `~/.claude/settings.json` for a `SessionStart` entry that runs `update-ski
       {
         "matcher": "startup|resume",
         "hooks": [
-          { "type": "command", "shell": "bash", "command": "bash ~/.claude/skills/claude-setup/update-skills.sh", "timeout": 60 }
+          { "type": "command", "shell": "bash", "command": "bash ~/.claude/skills/claude-setup/update-skills.sh --mode review", "timeout": 60 }
         ]
       }
     ]
@@ -125,7 +129,9 @@ Check `~/.claude/settings.json` for a `SessionStart` entry that runs `update-ski
 }
 ```
 
-Append the entry to any existing `SessionStart` list and never add it twice; an existing entry with an older matcher (e.g. only `startup`) gets this one. `startup|resume` because a resumed session (`claude --resume` / `--continue`) is a restart too, and the hook would never run on devices that always resume. The hook runs `update-skills.sh` from this skill folder, so the script updates itself with the skill. At most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and installs new or changed skills into `~/.claude/skills/`. It never overwrites a local copy that has its own changes or a local skill that was never synced; those are printed as conflicts into the session for Claude to merge. A skill deleted or renamed in the repo is removed locally only while the local copy still equals the last synced version. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
+Append the entry to any existing `SessionStart` list and never add it twice; an existing entry with an older matcher (e.g. only `startup`) gets this one. `startup|resume` because a resumed session (`claude --resume` / `--continue`) is a restart too, and the hook would never run on devices that always resume.
+
+What the hook does: at most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and compares it with the last installed commit. Review mode prints the new, changed and removed skills and installs nothing; the user's global CLAUDE.md tells Claude to show the diffs and install only after the user agrees. Auto mode installs new and changed skills into `~/.claude/skills/`. In both modes it never overwrites a local copy that has its own changes or a local skill that was never synced (it reports them as conflicts), and a skill deleted or renamed in the repo is removed locally only while the local copy still equals the last synced version. The hook prints facts only, never instructions to Claude. In review mode `update-skills.sh` itself changes only when the user installs an update, so no unreviewed code runs. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
 
 ## 4. Skills from GitHub
 
@@ -135,10 +141,10 @@ Append the entry to any existing `SessionStart` list and never add it twice; an 
    - in both but different: never replace the local copy with the repo version; merge as described in the Skills rules above (keeps every rule from both) and show the user what changed;
    - only local: list them with `bash ~/.claude/skills/claude-setup/local-only-skills.sh` and ask the user (AskUserQuestion, multiSelect) which to upload; never upload without asking. Project-specific skills: say they belong in that project's `.claude/skills/`. Copy the chosen ones into a fitting group folder in the repo and add them to the README skill list; write the others into `~/.claude/state/skills-local-only` (one name per line) so they are not offered again.
 3. If the repo changed, show the user `git -C ~/.claude/skills-repo status --short`, then commit and push once they agree.
-4. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force` once. It records the synced commit, so from then on the hook (if installed) only installs what changes on GitHub.
+4. Run `bash ~/.claude/skills/claude-setup/update-skills.sh --force --mode auto` once, after the user has seen the changes from 2. It records the synced commit, so from then on the hook (if installed) only reports or installs what changes on GitHub.
 
 Skip `~/.claude/skills/synced/` (Anthropic's built-in skills, managed by the app) everywhere and never put a `settings.json` into a skills folder.
 
 ## 5. Report
 
-List what changed on this device (5h stop value, CLAUDE.md choice - merged, overridden or kept - and its diff, status line installed or updated, settings merged, auto-update hook installed / already there / declined, skills copied/merged/pushed) and anything skipped. End with the skills version now on this device (`git -C ~/.claude/skills-repo log -1 --format='%h %cs %s'`) and whether it matches the latest commit on GitHub.
+Go through the to-do list item by item: what changed on this device (5h stop value, CLAUDE.md choice - merged, overridden or kept - and its diff, status line installed or updated, settings merged, plugins from older setups, skill update mode - review / auto / off, new or unchanged - skills copied/merged/pushed) and anything skipped. End with the skills version now on this device (`git -C ~/.claude/skills-repo log -1 --format='%h %cs %s'`) and whether it matches the latest commit on GitHub.

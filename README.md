@@ -3,6 +3,12 @@
 Claude Code skills, shared publicly. The owner uses this repo to keep the skills on all devices
 (desktop and laptop) in sync, and anyone is welcome to use them.
 
+> **Disclaimer: these are my personal preferences.** The skills, and above all `claude-setup`,
+> reflect how I (lerchenflo) like to work: English replies, the caveman reply style, `opus` with
+> `xhigh` effort, no Claude attribution in commits, usage-limit stops, laptop build rules. They are
+> shared as they are, without warranty. Read a skill before you install it, and adapt or skip
+> whatever does not fit you.
+
 ## First launch: run `claude-setup`
 
 On a new device, or on the first launch after cloning, run the `claude-setup` skill before
@@ -13,9 +19,10 @@ anything else. It:
 - on the first setup, asks once at which percentage of the 5-hour usage limit Claude should
   stop on its own. Claude never ignores this stop by itself: before a long-running task (night,
   unattended or autonomous work) it asks whether the stop should be ignored;
-- sets up Claude Code (global `CLAUDE.md`, status line, model, plugins);
-- installs all skills from this repo into `~/.claude/skills/` and adds a hook that keeps them up
-  to date.
+- starts with a to-do list of every step and works through it;
+- sets up Claude Code (global `CLAUDE.md`, status line, model, effort); it installs no plugins;
+- installs all skills from this repo into `~/.claude/skills/` and asks how this device gets skill
+  updates: review first (default), auto-install, or off.
 
 macOS, Linux and Windows (Git Bash):
 
@@ -38,9 +45,15 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 
 ## How the sync works
 
-- `claude-setup` offers to install a `SessionStart` hook that runs `claude/claude-setup/update-skills.sh`.
-  At most every 6 hours it pulls this repo into `~/.claude/skills-repo` and installs new or
-  changed skills into `~/.claude/skills/`.
+- `claude-setup` asks for an update mode and, unless you pick "off", installs a `SessionStart`
+  hook that runs `claude/claude-setup/update-skills.sh --mode review|auto`. At most every 6 hours
+  it pulls this repo into `~/.claude/skills-repo` and compares it with the installed skills.
+  - **review** (default): the hook only lists the new, changed and removed skills. Nothing is
+    installed until you agree; Claude shows you the diff first.
+  - **auto**: the hook installs new and changed skills into `~/.claude/skills/` on its own.
+  - **off**: no hook; skills change only when you run `claude-setup` again.
+- The hook prints facts only (what changed), never instructions to Claude. What Claude does with
+  them is written in your own global `CLAUDE.md`.
 - A local skill is only replaced when it still equals the last synced version. Local edits are
   never overwritten; the hook reports them as conflicts and Claude merges both versions.
 - When Claude changes a skill on a device, it copies the skill into its group folder here,
@@ -54,7 +67,7 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 
 | Skill | What it does |
 |-------|--------------|
-| `claude-setup` | Sets up Claude Code on a device: global `CLAUDE.md`, status line (context, 5h and weekly limits), model, effort, plugins, skill sync with GitHub, and the optional auto-update hook. Asks before it overrides an existing global `CLAUDE.md`. Run it first on every new device. |
+| `claude-setup` | Sets up Claude Code on a device with the owner's preferences: global `CLAUDE.md`, status line (context, 5h and weekly limits), model, effort and skill sync with GitHub. Works from a to-do list, asks before it overrides an existing global `CLAUDE.md`, and lets you pick the skill update mode (review first, auto-install or off). Run it first on every new device. |
 | `caveman` | Compressed reply style that cuts output tokens but keeps full technical accuracy. Levels lite, full, ultra and wenyan variants. |
 | `skill-creator` | Creates and improves skills, runs evals and benchmarks, and tunes skill descriptions so they trigger reliably. |
 
@@ -65,7 +78,7 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 | `summarize-and-generate-questions` | Sets up a course folder (extracts every file, interviews you about the exam scope, writes CLAUDE.md, open-question and to-verify lists, never assumes: needs two sources or asks), summarizes it with loud alarm boxes for missing content, and turns it into applied exam questions, a practice test or a learning page (summary + quiz). Every explanation says why each wrong answer is wrong; details live in `references/` so the main SKILL.md stays short. Built and calibrated for the course *Strukturierter Einstieg in die Programmierung*; it works for other courses, but its question style and folder layout target that course. |
 | `security-review` | Systematic security code review (injection, XSS, authentication, authorization, cryptography) with confidence-based findings. |
 | `test-driven-development` | Test-first workflow for features and bug fixes: write a failing test, then the code. |
-| `vori-translator` | Translates and reviews Vorarlbergerisch (Vori dialect) string resources (`values-de-rAT/strings.xml`, website texts): fills missing keys, fixes typos, Standard-German leftovers and broken placeholders. |
+| `vori-translator` | Translates and reviews Vorarlbergerisch (Vori dialect) string resources (`values-de-rAT/strings.xml`, website texts): fills missing keys, fixes typos, Standard-German leftovers and broken placeholders. Project-specific names and jokes go into a project add-on skill (`<project>-vori`). |
 
 ### kmp-architecture - Kotlin Multiplatform / Compose app architecture
 
@@ -142,6 +155,16 @@ Rules for skills and scripts:
 - Scripts must run on macOS, Linux and Windows (Git Bash). Line endings stay LF
   (`.gitattributes` enforces this).
 - Skills that come from third parties keep their original license file.
+
+## License
+
+The owner's own skills and scripts are under the MIT License (`LICENSE`). Skills from third parties
+keep their own license, which lies in their folder:
+
+- `android/*`: Google's official Android skills ([android/skills](https://github.com/android/skills)), Apache License 2.0 (`LICENSE.txt`).
+- `claude/skill-creator`: Anthropic (`LICENSE.txt`).
+- `claude/caveman`: Julius Brussee ([caveman](https://github.com/JuliusBrussee/caveman)), Apache License 2.0 (`LICENSE`, `NOTICE`; older parts MIT, `LICENSE-MIT`).
+- `kmp-architecture/*`: based on skills by Philipp Lackner; his terms apply.
 
 ## Credits
 
