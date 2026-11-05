@@ -45,6 +45,7 @@ After Merge or Override, show the user the resulting diff.
 - Never assume. When a requirement, design choice or behaviour is unclear and the answer changes what you build, ask the user with the interview tool (AskUserQuestion) before acting - don't pick a default and only mention it afterwards. This matters most in bigger work (features, plans, multi-file changes): collect the open questions up front and ask them together. Only skip asking for facts you can check yourself (code, docs, tools).
 - Ask every open question with the interview tool (AskUserQuestion), never as plain text in a reply. This includes yes/no confirmations, "should I ...?" offers at the end of a reply, and choices between options or next steps. Put the needed context into each question, because the user may see only the question dialog. Plain text is for results and reports only.
 - Always use the `caveman` skill at level **full** for every reply, in every session, unless the user says "stop caveman" or "normal mode".
+- After a change with several small fixes or edits, end the last reply of that work with a small table of what was changed or fixed, one row per item (also in caveman mode). Skip the table for a single change.
 
 ## Usage limits
 - The user may ask to stop or pause at a usage limit (e.g. "stop at 12% of the 5h limit", "don't use more than 20%"). Read the current values from the file the status line writes:
