@@ -38,7 +38,8 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | suchen / finden | suacha / finda | suchen, finden | |
 | teilen | teila (also toala) | teilen | |
 | verlassen | verlo | verlassen | |
-| verlieren / sie verlieren | verlüra / verlürand | verliara, verliarand, verliart, verlieren | old *iu*: ü, not ia (draft verliarand → fixed); only verlürand is written so far; older "verliart" in tictactoe_twist_vanishing_description - don't sweep |
+| verlieren / verliert / sie verlieren | verlüra / verlürt / verlürand | verliara, verliarand, verliart, verlieren | old *iu*: ü, not ia (draft verliarand → fixed; verliart in tictactoe_twist_vanishing_description fixed by the translator) |
+| älteste | älteste | ältaste | "s älteste" (ältaste in tictactoe_twist_vanishing_description fixed by the translator) |
 | verwenden | verwenda | verwenden | |
 | zurücksetzen | zrucksetza | zurücksetzen | |
 | erneut versuchen | Nomml versuacha | erneut | |
