@@ -23,6 +23,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | auswählen | uswähla | auswählen | |
 | bearbeiten | bearbeita | bearbeiten | |
 | beitreten | beitreata | beitreten | |
+| bezahlt ("paid" as a state) | zahlt | Als bezahlt | "Als zahlt markiera" (draft "Als bezahlt markiera" → fixed); "Bezahlt vo %1$s" (paid by) keeps be-, the translator left it |
 | entfernen | entferna | entfernen | |
 | erstellen | erstella | erstellen | |
 | hinzufügen / hinzugefügt / du fügst hinzu | dazuatua / dazuato / dazuatuasch | hinzufügen, hinzufüga | hinzufüga still in older strings - don't sweep; participle "I hob … dazuato" |
@@ -37,6 +38,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | suchen / finden | suacha / finda | suchen, finden | |
 | teilen | teila (also toala) | teilen | |
 | verlassen | verlo | verlassen | |
+| verlieren / sie verlieren | verlüra / verlürand | verliara, verliarand, verliart, verlieren | old *iu*: ü, not ia (draft verliarand → fixed); only verlürand is written so far; older "verliart" in tictactoe_twist_vanishing_description - don't sweep |
 | verwenden | verwenda | verwenden | |
 | zurücksetzen | zrucksetza | zurücksetzen | |
 | erneut versuchen | Nomml versuacha | erneut | |
