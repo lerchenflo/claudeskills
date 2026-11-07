@@ -82,6 +82,12 @@ Bundled: `scripts/` (`extract_texts.py`, `extract_office.py`, `ocr.swift`,
   same grammatical shape; the correct option is not the longest or most
   qualified by habit (the build checks this). Put precision into all four
   options, not only the right one.
+- **The user has no calculator.** Pick numbers that work by hand on paper
+  (small operands, powers of 2, clean results). If big numbers are unavoidable,
+  the solution shows the hand method step by step.
+- **Every part of a multi-part task keeps its task.** When parts (1a, 1b, …)
+  sit on separate pages behind a „Continue“ button, repeat the initial task text
+  and all givens on each page, so no part appears without context.
 - **Never assume:** a question may only test settled content (two or more
   sources agree, or the user confirmed it). Open or single-source spots get
   no question until the user answers.
