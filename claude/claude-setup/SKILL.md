@@ -58,6 +58,14 @@ After Merge or Override, show the user the resulting diff.
 ## Git
 - No Claude attribution in commits or pull requests (no `Co-Authored-By: Claude …` trailer, no "Generated with Claude Code" line). `claude-setup` turns it off with `"attribution": { "commit": "", "pr": "" }` in `~/.claude/settings.json`; this is the user's choice for every repo.
 
+## Client and server projects
+- Some projects come as a client repo plus a server repo (an app and its backend). An agent changes code only in its own repo; reading the other repo is fine.
+- When a change the user approved needs work in the other repo, hand it over. Run `ListAgents`: if a session of the other repo is live, send the request with `SendMessage`. If none is live or the message fails, add the request to the other repo's to-do file (the one its CLAUDE.md names, e.g. `Todo.md` or `plans/Todo.md`) with source and date. That to-do file is the only file an agent may write in the other repo.
+- Hand over only changes the user approved, never a guess of your own.
+- Describe what is needed, not how to build it: the behaviour, the user's decisions, who may do what, edge cases, compatibility with released versions, and the exact field names this side sends or reads. Leave the other side's structure (classes, services, storage, file layout) to the other agent: it researches its own code and decides with its own skills.
+- The receiving agent replies with the contract it built (endpoints, field names, changes to the proposed names), and the requester follows it. The rules work both ways: client to server and server to client.
+- A project's CLAUDE.md may name the peer repo, its to-do file or a stricter format.
+
 ## Builds
 - Compile tasks (e.g. Gradle `compile*` tasks) may be run freely to check changes, but only if the machine is not a laptop. Check first: macOS `pmset -g batt | grep -q InternalBattery` (match = laptop); Linux `ls /sys/class/power_supply/BAT*` (exists = laptop); Windows `Get-CimInstance Win32_Battery` (any result = laptop). On a laptop, and for every other build task (tests, assemble, run, install, full build, publish), only run it when the user explicitly asks. A project's CLAUDE.md may name the exact tasks.
 
