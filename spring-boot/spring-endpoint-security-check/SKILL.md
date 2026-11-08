@@ -83,6 +83,40 @@ Usually enforced per service, not centrally — check explicitly every time.
 - New token kinds carry a distinct `type` claim and the consuming endpoint validates it.
 - Refresh tokens stored hashed; rotation atomic.
 
+## Live edge probe (bundled script)
+
+Sections 1–6 read code. `scripts/sensitive-path-probe.sh` checks the **deployed** edge from
+outside: a read-only probe that confirms sensitive paths are not actually served, that the rate
+limiter trips, and that the real-client-IP is seen behind the proxy. Use it as a deploy-time
+companion to the static review, never as a replacement.
+
+**Only run it against a host you own or have written permission to test.** GET only — no writes, no
+auth bypass, no fuzzing. Point it at the environment under review:
+
+```bash
+scripts/sensitive-path-probe.sh https://your-host.example            # full run
+scripts/sensitive-path-probe.sh https://your-host.example --delay 0.5 --parallel 1   # gentle, serial
+scripts/sensitive-path-probe.sh https://your-host.example --skip-ratelimit            # no burst
+```
+
+What it probes (≈400 paths) and how it ties back to the checklist:
+
+- **`.env`, cloud/service-account JSON, `.git/`, SSH keys, DB dumps, FTP-plugin creds** → section 6
+  (secret exposure). Any `[EXPOSED?]` (a 200 with a non-HTML body) = rotate the secret now, then add
+  an edge deny rule (return 404, not 403).
+- **Spring actuator** (`/actuator/env`, `/actuator/heapdump`, `/actuator/prometheus`, unprefixed
+  `/env`, `/heapdump`, `/jolokia`) and `/h2-console` → section 1 (a `permitAll`/`/actuator/**`
+  matcher leaking config or a heap dump).
+- **Rate-limit burst** (default 250 requests at `/.env`) → section 5. Expect mostly 429; no 429 at
+  all means the limiter is off or scoped wrong.
+- **`X-Forwarded-For` check** (sends a reserved RFC 5737 `203.0.113.7`) → section 5. Then read the
+  app log: it should record `203.0.113.7`, not the proxy IP, or per-IP limits and fail2ban are blind.
+
+Reading results: `[PUBLIC]` (robots/sitemap/security.txt/app-links) and `[SPA?]` (200 + the app
+shell) are expected false positives — not leaks. 401/403/404/429 all mean the path is locked. Only
+`[EXPOSED?]` and unexpected `[REDIR]` to a real download warrant a finding. Fold any real hit into
+the findings table as a HIGH (secret leak / auth bypass) with the exposed path as the location.
+
 ## Severity
 
 - **HIGH** — exploitable by any (un)authenticated user with no special conditions: auth bypass,
