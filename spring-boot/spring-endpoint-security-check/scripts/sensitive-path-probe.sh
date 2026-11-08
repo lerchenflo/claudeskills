@@ -63,6 +63,13 @@ done
 
 command -v curl >/dev/null || { echo "curl required" >&2; exit 1; }
 
+# colors (only when stdout is a real terminal; stays plain in files / pipes)
+if [[ -t 1 ]]; then
+  RED=$'\e[31m'; GRN=$'\e[32m'; YEL=$'\e[33m'; BOLD=$'\e[1m'; RST=$'\e[0m'
+else
+  RED=; GRN=; YEL=; BOLD=; RST=
+fi
+
 TS=$(date +%Y%m%d-%H%M%S)
 RESULTS="probe-results-$TS.tsv"
 RL_RESULTS="probe-ratelimit-$TS.txt"
@@ -535,11 +542,23 @@ probe() {
               -w '%{http_code}\t%{size_download}\t%{content_type}\t%{redirect_url}' \
               "$url" 2>/dev/null) || out=$'000\t0\t\t'
   printf '%s\t%s\n' "$out" "${url#"$TARGET"}"
+
+  # live leak alert: a real 200/206 with a non-HTML body on a non-public path
+  local code size ctype redir rel bare p
+  IFS=$'\t' read -r code size ctype redir <<< "$out"
+  rel="${url#"$TARGET"}"; bare="${rel#/}"
+  if [[ "$code" == "200" || "$code" == "206" ]] && [[ "$ctype" != text/html* ]]; then
+    local pub=0
+    for p in $PUBLIC_PATHS; do [[ "$bare" == "$p" ]] && { pub=1; break; }; done
+    (( pub )) || printf '  %s[LEAK]%s HTTP %s  %s  %s bytes  %s%s%s\n' \
+        "$RED$BOLD" "$RST" "$code" "$ctype" "$size" "$RED$BOLD" "$rel" "$RST" >&2
+  fi
+
   [[ "$DELAY" != "0" ]] && sleep "$DELAY"
   return 0
 }
 export -f probe
-export TIMEOUT TARGET DELAY
+export TIMEOUT TARGET DELAY PUBLIC_PATHS RED GRN YEL BOLD RST
 
 trap 'echo; echo "Interrupted. Partial results in $RESULTS"; exit 130' INT
 
@@ -569,9 +588,13 @@ curl -sS -k -o /dev/null -m 10 --max-redirs 0 \
      "$TARGET/" 2>/dev/null || echo "(request failed)"
 echo
 
+echo "== probing $N_PATHS paths (real leaks are flagged ${RED}${BOLD}[LEAK]${RST} live below) =="
+echo
+# stderr is left open on purpose so live [LEAK] lines reach the terminal.
 echo "$PATHS" \
   | xargs -P "$PARALLEL" -I{} bash -c 'probe "$@"' _ "$TARGET{}" \
-  > "$RESULTS" 2>/dev/null || true
+  > "$RESULTS" || true
+echo
 
 # ---------------------------------------------------------------------------
 # Summarize
@@ -665,5 +688,55 @@ echo
 echo "if any [EXPOSED?] appears: rotate the secret immediately, then add an"
 echo "explicit deny rule at the edge (return 404, not 403, to avoid signalling"
 echo "that the path exists)."
+
+# ---------------------------------------------------------------------------
+# Bottom line, in plain language: what is actually exposed and must not be.
+# ---------------------------------------------------------------------------
+EXPOSED=$(awk -F'\t' -v pub="$PUBLIC_PATHS" '
+BEGIN { n = split(pub, a, " "); for (i = 1; i <= n; i++) { p = a[i]; sub(/^\//, "", p); pubmap[p] = 1 } }
+{
+  code = $1; size = $2; ctype = $3; path = $5
+  bare = path; sub(/^\//, "", bare)
+  if ((code == "200" || code == "206") && !(bare in pubmap) && ctype !~ /^text\/html/)
+    printf "%s\t%s\t%s\t%s\n", path, code, ctype, size
+}
+' "$RESULTS")
+
+echo
+echo "========================================================================"
+echo "  SUMMARY - pages that are open to the public but should not be"
+echo "========================================================================"
+echo
+if [[ -z "$EXPOSED" ]]; then
+  printf "  %s%s\xE2\x9C\x93 All clear.%s Nothing sensitive is being served.\n" "$GRN" "$BOLD" "$RST"
+  echo
+  echo "  Every path we tried was either blocked (login required / forbidden /"
+  echo "  not found), rate-limited, or answered with just the normal app page."
+  echo "  The only public files were robots.txt and sitemap.xml, which are meant"
+  echo "  to be public. There is nothing for you to fix here."
+else
+  N_EXP=$(wc -l <<< "$EXPOSED" | tr -d ' ')
+  printf "  %s%s\xE2\x9C\x97 Found %s page(s) that anyone on the internet can read.%s\n" "$RED" "$BOLD" "$N_EXP" "$RST"
+  echo
+  echo "  These each returned real content (not just the app page), so the file"
+  echo "  is genuinely being served. Treat every one as a leak:"
+  echo
+  i=0
+  while IFS=$'\t' read -r path code ctype size; do
+    i=$((i + 1))
+    printf "  %s%s. %s%s\n" "$RED$BOLD" "$i" "$path" "$RST"
+    printf "       what it returns : %s, %s bytes\n" "$ctype" "$size"
+    printf "       open it here    : %s%s\n" "$TARGET" "$path"
+    echo
+  done <<< "$EXPOSED"
+  echo "  Do this for each one, in order:"
+  echo "    1. If the file holds a secret (.env, a *.json key, a config file),"
+  echo "       assume the secret is now public and change/rotate it today."
+  echo "    2. Block the path at your web server or CDN so it returns 404"
+  echo "       (use 404, not 403 - a 403 still tells an attacker the file exists)."
+  echo "    3. Run this script again and confirm the path now shows 404."
+fi
+echo
+echo "========================================================================"
 
 exit "$RC"

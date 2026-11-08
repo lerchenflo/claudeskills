@@ -117,6 +117,13 @@ shell) are expected false positives — not leaks. 401/403/404/429 all mean the 
 `[EXPOSED?]` and unexpected `[REDIR]` to a real download warrant a finding. Fold any real hit into
 the findings table as a HIGH (secret leak / auth bypass) with the exposed path as the location.
 
+While it runs, a real leak (a 200/206 with a non-HTML body on a non-public path) prints a red
+`[LEAK]` line live with the endpoint, so you see it the moment it is found. At the very bottom the
+script prints a plain-language **SUMMARY** block: either `✓ All clear` (nothing sensitive served) or
+`✗ Found N page(s) ...` listing each exposed path, what it returns, its URL, and the rotate →
+edge-404 → re-probe steps. That block is the quick read; the findings table and raw TSV are the
+detail behind it.
+
 ## Severity
 
 - **HIGH** — exploitable by any (un)authenticated user with no special conditions: auth bypass,
