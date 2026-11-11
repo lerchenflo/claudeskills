@@ -55,6 +55,12 @@ After Merge or Override, show the user the resulting diff.
 - Percentages are of the current window; a new 5h window starts at `resets_at`, so a cap like "20% of the limit" applies to the window the work runs in.
 - Always keep <RESERVE>% of the 5h limit free for other use: even without a cap from the user, stop cleanly (commit/report state) once the 5h usage reaches <STOP>%, and say how to continue after `resets_at`. Never skip this stop on your own. When the user asks for a long-running task - work that runs overnight or unattended ("night work", "over night", "while I sleep", autonomous mode) or a big multi-step plan to implement autonomously - ask before starting whether the <STOP>% stop should be ignored for this work (the user may want as much done as possible before the weekly limit resets, because unused tokens are lost), and ignore it only if they say yes. A cap the user names always wins.
 
+## Private data in requests
+- Never send the user's private data to an external service on your own: no email address, name, username, phone number, home address, location, account or device IDs, tokens or API keys in any request header (e.g. `User-Agent`, `From`, `Referer`), URL, query parameter or payload. This holds even when a site's policy asks automated clients to identify themselves or to give contact details.
+- When a request would need or could include such data, stop before sending it and interview the user with AskUserQuestion. Make it very clear what you are about to do: which data exactly, to which service and URL, in which field (header name, parameter, body), how often, and why. Always offer a neutral alternative (generic tool name, no contact data, library default) and recommend it unless the service really requires the data.
+- Send private data only after the user explicitly agrees for that service and that field. A yes for one service, field or session does not carry over to another.
+- Default for scripts and tools you write: a neutral `User-Agent` (tool name only or the library default), never one that carries personal contact data.
+
 ## Git
 - No Claude attribution in commits or pull requests (no `Co-Authored-By: Claude …` trailer, no "Generated with Claude Code" line). `claude-setup` turns it off with `"attribution": { "commit": "", "pr": "" }` in `~/.claude/settings.json`; this is the user's choice for every repo.
 
