@@ -73,6 +73,14 @@ main { overflow-y: auto; padding: 28px 32px 40px; }
 .wbox.click svg { cursor: pointer; }
 .clockbox svg { max-width: 300px; }
 .whint { font-size: 13px; color: var(--muted); margin: 4px 0 8px; }
+/* scratch pad under every question: text notes and a drawing board, saved per question */
+.pad { margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; }
+.pad > summary { cursor: pointer; font-size: 13.5px; font-weight: 700; color: var(--muted); padding: 8px 0; }
+.pad[open] { padding-bottom: 10px; }
+.pad .padbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.pad textarea { width: 100%; min-height: 110px; resize: vertical; font: 14px/1.45 ui-monospace, "DejaVu Sans Mono", monospace; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; box-sizing: border-box; }
+.pad canvas { display: block; width: 100%; height: 260px; border: 1px dashed var(--line); border-radius: 6px; background: var(--panel); touch-action: none; cursor: crosshair; }
+.pad .btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 svg .vz-line { fill: none; stroke: var(--text); stroke-width: 1.6; pointer-events: none; }
 svg .vz-u { fill: none; stroke: var(--muted); stroke-width: 1.2; }
 svg .vz-lab { fill: var(--text); font: 700 17px system-ui, sans-serif; text-anchor: middle; pointer-events: none; }
@@ -431,6 +439,7 @@ function docStats() {
 }
 items.forEach(item => {
   const rid = item.dataset.rid, det = item.querySelector('details.sol');
+  if (!det) return;   // a task box without solution must not stop the whole page script
   det.open = revealedDoc.has(rid);
   det.addEventListener('toggle', () => { det.open ? revealedDoc.add(rid) : revealedDoc.delete(rid); docStats(); });
   const ta = item.querySelector('.note');
@@ -471,9 +480,12 @@ const shuffled = n => shuffle([...Array(n).keys()]);
 const HAS_EXT = QUESTIONS.some(q => q.x), N_EXT = QUESTIONS.filter(q => q.x).length;
 function pool(ext) { return QUESTIONS.map((q, i) => i).filter(i => ext || !QUESTIONS[i].x).sort((a, b) => topics.indexOf(QUESTIONS[a].t) - topics.indexOf(QUESTIONS[b].t) || a - b); }
 const makeSeq = (random, ext) => random ? shuffle(pool(ext)) : pool(ext);
+// tap-to-cycle tables with one blank per row (Kprim, matching) show their rows in a random order per run,
+// so the answers never follow the order of the toggle labels (user request, 11.11.2026); q.grid.fixed keeps the order
+const rowShuffle = q => q.kind === 'grid' && !!q.grid.toggle && !q.grid.fixed && q.grid.rows.length > 1 && q.grid.rows.every(r => r.filter(c => c === '?').length === 1);
 function fresh() {
   const instant = state ? state.instant : true, random = state ? state.random : false, extended = state ? !!state.extended : false;
-  return { order: QUESTIONS.map(q => isInput(q) ? [] : shuffled(q.o.length)), sel: QUESTIONS.map(q => isInput(q) ? '' : []),
+  return { order: QUESTIONS.map(q => isInput(q) ? (rowShuffle(q) ? shuffled(q.grid.rows.length) : []) : shuffled(q.o.length)), sel: QUESTIONS.map(q => isInput(q) ? '' : []),
            answers: Array(NQ).fill(null), shown: Array(NQ).fill(false), checked: false, cur: 0, instant, random, extended, seq: makeSeq(random, extended) };
 }
 function save() { store.set(KEY + '-quiz', state); }
@@ -483,6 +495,7 @@ function load() {
       && QUESTIONS.every((q, i) => isInput(q) ? typeof s.sel[i] === 'string' : Array.isArray(s.sel[i]) && s.order[i].length === q.o.length)) {
     if (!Array.isArray(s.seq) || !s.seq.every(i => i >= 0 && i < NQ) || s.seq.length !== pool(!!s.extended).length) s.seq = makeSeq(!!s.random, !!s.extended);
     if (!(s.cur >= 0 && s.cur < NQ)) s.cur = 0;
+    QUESTIONS.forEach((q, i) => { if (rowShuffle(q) && !(Array.isArray(s.order[i]) && s.order[i].length === q.grid.rows.length)) s.order[i] = shuffled(q.grid.rows.length); });
     return s;
   }
   return fresh();
@@ -655,8 +668,11 @@ const WIDGETS = {
       const vals = gridVals(rev ? state.answers[i] : state.sel[i]);
       const t = document.createElement('table'); t.className = 'gridw';
       t.innerHTML = '<tr>' + G.head.map(h => `<th>${h}</th>`).join('') + '</tr>';
-      let b = 0;
-      G.rows.forEach(row => {
+      const start = []; let nb = 0;
+      G.rows.forEach((row, r) => { start[r] = nb; nb += row.filter(c => c === '?').length; });
+      const perm = rowShuffle(q) && Array.isArray(state.order[i]) && state.order[i].length === G.rows.length ? state.order[i] : G.rows.map((_, r) => r);
+      perm.forEach(r => {
+        const row = G.rows[r]; let b = start[r];
         const tr = document.createElement('tr');
         row.forEach(cell => {
           const td = document.createElement('td');
@@ -814,9 +830,57 @@ function renderCard() {
     }
     card.appendChild(ex);
   }
+  card.appendChild(scratchPad(q));
   el('back').disabled = pos0 === 0; el('next').disabled = pos0 === total() - 1;
   el('check').textContent = state.checked || state.instant ? 'Ergebnis' : 'Prüfen';
   el('next').classList.toggle('pulse', rev && !state.checked && pos0 < total() - 1);
+}
+// ───── scratch pad (Notizblock): text and drawing per question, kept in localStorage ─────
+function scratchPad(q) {
+  const all = store.get(KEY + '-pad', {}), mine = all[q.id] || {}, d = document.createElement('details');
+  const put = (k, v) => { const a = store.get(KEY + '-pad', {}); a[q.id] = Object.assign(a[q.id] || {}, { [k]: v }); store.set(KEY + '-pad', a); };
+  d.className = 'pad'; d.open = store.get(KEY + '-padOpen', false);
+  d.innerHTML = '<summary>✎ Notizblock: rechnen und skizzieren (wird pro Frage gespeichert)</summary>' +
+    '<div class="padbar"><button type="button" class="btn small" data-m="t">Text</button><button type="button" class="btn small" data-m="d">Zeichnen</button>' +
+    '<button type="button" class="btn small" data-m="e">Radierer</button><button type="button" class="btn small" data-m="c">Löschen</button></div>' +
+    '<textarea spellcheck="false" placeholder="Nebenrechnung, z. B. 0111 1010 1101 → 7 A D"></textarea><canvas hidden></canvas>';
+  const ta = d.querySelector('textarea'), cv = d.querySelector('canvas'), bar = d.querySelector('.padbar');
+  ta.value = mine.t || '';
+  ta.addEventListener('input', () => put('t', ta.value));
+  d.addEventListener('toggle', () => { store.set(KEY + '-padOpen', d.open); if (d.open) mode(mode.m); });
+  let ctx = null, drawing = false, erase = false, last = null;
+  const fit = () => {
+    const w = cv.clientWidth, h = cv.clientHeight, r = window.devicePixelRatio || 1;
+    if (!w || (cv.width === Math.round(w * r) && ctx)) return;
+    cv.width = Math.round(w * r); cv.height = Math.round(h * r); ctx = cv.getContext('2d'); ctx.scale(r, r);
+    ctx.lineCap = ctx.lineJoin = 'round';
+    const src = (store.get(KEY + '-pad', {})[q.id] || {}).d;
+    if (src) { const im = new Image(); im.onload = () => ctx.drawImage(im, 0, 0, w, h); im.src = src; }
+  };
+  function mode(m) {
+    mode.m = m;
+    if (m === 'c') { if (cv.hidden) { ta.value = ''; put('t', ''); } else if (ctx) { ctx.clearRect(0, 0, cv.width, cv.height); put('d', ''); } mode.m = cv.hidden ? 't' : 'd'; }
+    else if (m === 'e') { erase = !erase; mode.m = 'd'; }
+    else erase = false;
+    cv.hidden = mode.m !== 'd'; ta.hidden = mode.m === 'd';
+    if (!cv.hidden) fit();
+    bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === mode.m || (b.dataset.m === 'e' && erase)));
+    put('m', mode.m);
+  }
+  bar.addEventListener('click', e => { const b = e.target.closest('button'); if (b) mode(b.dataset.m); });
+  const at = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener('pointerdown', e => { fit(); if (!ctx) return; drawing = true; last = at(e); try { cv.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+  cv.addEventListener('pointermove', e => {
+    if (!drawing || !ctx) return; const p = at(e);
+    ctx.globalCompositeOperation = erase ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = getComputedStyle(cv).color; ctx.lineWidth = erase ? 18 : (e.pressure > 0 && e.pointerType === 'pen' ? 1 + 2.5 * e.pressure : 2.2);
+    ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p;
+  });
+  const end = () => { if (!drawing) return; drawing = false; try { put('d', cv.toDataURL('image/png')); } catch (x) {} };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  mode.m = mine.m === 'd' ? 'd' : 't';
+  setTimeout(() => mode(mode.m), 0);
+  return d;
 }
 function pending(i) {
   const q = QUESTIONS[i], s = state.sel[i], a = state.answers[i];

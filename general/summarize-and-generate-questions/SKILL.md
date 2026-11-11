@@ -134,6 +134,22 @@ Bundled: `scripts/` (`extract_texts.py`, `extract_office.py`, `ocr.swift`,
   Jahr …“, „Auf welcher Folie …“. Names, years and sources may appear as
   context but are never what is tested, and options are never lists of names
   or years.
+- **Code in a question goes in `code`, one statement per line.** IJVM programs,
+  microinstruction sequences, source code: never a one-liner with „·“ or commas
+  between the statements in the stem. The page shows `code` as a `<pre>` block;
+  labels keep their own column (`L1: BIPUSH 0`). (User request, 11.11.2026.)
+- **Tap-to-cycle tables are shuffled.** The learning page shows the rows of every
+  toggle grid with one blank per row (Kprim tables, matching) in a random order per
+  run, so the answers never follow the order of the toggle labels (1 tap, 2 taps,
+  3 taps …). Still write rows so that the source order is not the toggle order;
+  set `grid.fixed: true` only where the row order carries meaning (a sequence,
+  a truth table). (User request, 11.11.2026.)
+- **Every question has a scratch pad.** The learning page puts a „Notizblock“
+  (text and drawing board, saved per question) under each card for hand
+  calculations; keep it when changing the template. (User request, 11.11.2026.)
+- **Worked examples in the summary need an answer block:** `.aufg` = `.q` + `.a`.
+  The build turns `.a` into the hidden solution; a box without one used to stop
+  the page script (now guarded, still write `.a`).
 - **Explanations never refer to options by letter or position** – options are
   shuffled at runtime. No „B ist …“, „die erste Option“, „die letzten
   beiden“, „die letzte Aussage“; quote the option text instead (the build

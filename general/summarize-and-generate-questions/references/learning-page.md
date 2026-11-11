@@ -35,6 +35,11 @@ Rules learned with these formats:
 
 - **Error hunt:** later steps follow from the planted error (consequential
   error), so only one step is the *first* wrong one.
+- **Row order and scratch pad (template):** toggle grids with one blank per row
+  are shown in a random row order per run (`rowShuffle`, stored in `state.order[i]`,
+  answers stay in source order; `grid.fixed` turns it off). Every card ends with a
+  `<details class="pad">` Notizblock: textarea + canvas (pen, eraser, clear), saved
+  per question id under `KEY-pad`, open state under `KEY-padOpen`.
 - **Kprim table vs. MC Kprim:** the table allows „all false“ and matches ilias;
   MC with checkboxes needs 1–4 correct. Offer both in the format sample.
 - **Explain the procedure in the stem** when asking for an algorithm's result
