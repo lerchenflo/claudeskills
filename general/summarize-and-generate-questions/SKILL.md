@@ -147,6 +147,11 @@ Bundled: `scripts/` (`extract_texts.py`, `extract_office.py`, `ocr.swift`,
 - **Every question has a scratch pad.** The learning page puts a „Notizblock“
   (text and drawing board, saved per question) under each card for hand
   calculations; keep it when changing the template. (User request, 11.11.2026.)
+- **Worked examples in the summary are fully explained:** numbered steps with
+  the intermediate values, how and why each step is done, typical mistakes, and
+  a table or picture where it helps (e.g. a colored grid). A bare result teaches
+  nothing to someone who does not know the method yet. Prefer student-friendly
+  wording over completeness. (User request, 12.11.2026.)
 - **Worked examples in the summary need an answer block:** `.aufg` = `.q` + `.a`.
   The build turns `.a` into the hidden solution; a box without one used to stop
   the page script (now guarded, still write `.a`).
@@ -226,8 +231,13 @@ handing it over. Nothing is done until it passes.
    hold.
 3. **Compute, don't trust.** Recalculate every worked example, solution,
    table, conversion and formula with Python – including the user's and
-   classmates' solutions. A wrong class solution is shown as a slip
-   (`.alarm.slip`), never fixed silently.
+   classmates' solutions. A wrong slide or class solution of the lecturer is
+   shown as a slip (`.alarm.slip`), never fixed silently. A mistake in the
+   user's own or a classmate's notes or submissions is **never written into
+   the summary** (no „In deiner Abgabe falsch/unklar“ boxes): the summary shows
+   the correct content, and the mistake is raised in the interview
+   (AskUserQuestion) while the document is being made. (User request,
+   12.11.2026.)
 4. **Drawings match the content:** shaded Venn regions, axis labels, table
    values, arrows.
 5. **Sources agree.** Cross-check with every source in the folder (script,

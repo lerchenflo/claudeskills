@@ -84,8 +84,10 @@ anyway (a solved gap, an interpretation) is an assumption: mark it
    main topic; „Still missing“ overview at the top; ★ exam-relevant spots as
    `.alarm.exam` plus their own section; every gap/`[UNKLAR]` as
    `.alarm.missing` with its #number; every Claude addition as
-   `.alarm.added`; exercises with full task text and solution, slips as
-   `.alarm.slip`; per topic a box listing what the allowed formula sheet
+   `.alarm.added`; exercises with full task text and a fully explained
+   solution (every step, how and why), slips of the lecturer's material as
+   `.alarm.slip` (mistakes in the user's or classmates' own notes never go
+   into the summary – ask about them in the interview instead); per topic a box listing what the allowed formula sheet
    covers; a symbol table for math courses; clean SVG drawings where the notes
    have sketches. Output as chosen: learning page (`references/learning-page.md`;
    empty question bank until the review) and/or
@@ -120,7 +122,8 @@ anyway (a solved gap, an interpretation) is an assumption: mark it
   unclear, still needs input; also the „Still missing“ overview),
   `.alarm.added` (orange – Claude added, interpreted or assumed),
   `.alarm.exam` (magenta – ★ Prüfungsrelevant), `.alarm.slip` (brown –
-  exercise solved wrongly in class). Inline:
+  slide or class solution of the lecturer is wrong; never for the user's own
+  or classmates' notes). Inline:
   `<span class="flag missing">FEHLT</span>`, important terms
   `<mark class="hl">` (solid yellow, bold). Alarms only where they apply,
   never on clear content. Normal content uses the calm
