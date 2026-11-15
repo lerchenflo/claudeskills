@@ -58,6 +58,7 @@ A participle ending in -a takes it on top: "d igladana User".
 **Feminine singular keeps -e**: "a uafache Liste", "in die richtige Reihafolg".
 **No article before a plural noun keeps -e**: "Tägliche Rätsel".
 Neuter after "a" takes **-s**: "a fremds Token", "a klenns Bild".
+**No article before a neuter singular keeps -es**: "Mobiles Radar gseaha" (draft "Mobils" → fixed).
 
 ## 3. Verbs
 
