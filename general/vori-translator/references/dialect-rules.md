@@ -102,7 +102,7 @@ new word, prefer rephrasing around it when unsure. Infinitive of haben: **ho**.
 | der / die / das | da / d or die / s or des (neuter nouns: s Mitglied) |
 | dem / den | am, deam / da, dean – den is **da**, never "an" (= einen) |
 | dieser / diese / dieses | da / **dia** ("über dia Sitta") / des |
-| einem / einer (dative) | **nam** / **na**, **nar** before a vowel ("vo nam andra Spieler", "bei na Aufsichtsbehörde") – "am" is only *dem* |
+| einem / einer (dative) | **nam** / **na**, also before a vowel ("vo nam andra Spieler", "bei na Aufsichtsbehörde", "vo na Umfrog-Option"; draft "vo nar Umfrog-Option" → fixed, "nar" only in older website text) – "am" is only *dem* |
 | diesen (dat pl), all diesen | deana, **allna** ("vo allna Spieler") |
 | in die / in der | ind / in da |
 

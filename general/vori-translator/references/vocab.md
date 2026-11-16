@@ -18,6 +18,8 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | abgesagt / gesagt | abgseit / gseit | abgsagt, gsagt | draft abgsagt → fixed ("%1$s hot s Event abgseit") |
 | aktivieren / deaktivieren | aktiviera / deaktiviera | aktivieren, deaktivieren | |
 | akzeptieren / ablehnen | akzeptiera / ablehna | akzeptieren, ablehnen | |
+| es (object after the verb) | des | | draft "Hättsch es gern?" → fixed "Hättsch des gern?"; "es" as subject stays ("Es git …") |
+| finden / findest du (question) | finda / findasch du | | draft "Wie findsch du des Feature?" → fixed "Wie findasch du …"; verb-last "du s findsch" stays as in the file, "kennsch du" was kept |
 | ändern | ändra | ändern | |
 | anrufen | arufa | anrufen | |
 | anzeigen / zeigen | azoaga / zoaga | anzeigen | |
