@@ -140,6 +140,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | dort | döt | dött, dort | single t |
 | weg (gone, away) | furt | weg | "sind denn für alle furt"; draft weg → fixed. Verb compounds keep weg- ("wegklickt") |
 | vielleicht | villicht | vilicht, vielleicht | "Villicht morn." |
+| mit vielen (dative plural) | mit vielna | mit viela, mit viele | draft "mit viela Features" → user 2026-11-18 "mit vielna Features"; nominative/accusative "viele" stays ("viele Features hond…", "Z viele Afroga") |
 | ein bisschen | a bitzle | a bitz, bissle, bisschen | |
 | etwas / etwas anderes | eapas / eapas andres | etwas | |
 | anders (adverb) | andersch | | |
