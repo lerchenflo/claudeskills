@@ -224,7 +224,7 @@ To add a word (learning loop): one row, the rejected draft form in **avoid**.
 | Fahrrad | Fahrrad | Velo | |
 | der beste … der Welt | … uf da Welt | | |
 | danke vielmals / sehr nett | danke vielmols / voll nett vo dir | | |
-| ja / nein / ok | jo (button "yes" = mol) / na / passt | | |
+| ja / nein / ok | jo (button "yes" = mol) / na / passt | Ja, Nein, Nei | draft "Ja oda Nei" → fixed "Jo oda Na" (also inside running text, not only on buttons) |
 | hallo (greeting) | Grüße / Zeawas | Hoi | |
 | Bist du sicher? | Bisch da sicher? | | |
 | Willst du … ? | Magsch … ? / Willsch du … ? | | |
