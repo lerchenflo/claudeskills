@@ -9,7 +9,7 @@ Sets up the user's personal Claude Code preferences on the device this session r
 
 ## To-do list first
 
-Start every run with a to-do list, before any command that changes something. Use the session's task / to-do tool when there is one; otherwise write a numbered checklist in the reply. List every step below (0-5) with the sub-steps that apply on this device, the questions to ask included. Show the list, then work through it in order: mark each item in progress and done, add items that a check turns up (e.g. a skill conflict to merge), and do no work that is not on the list. Step 0 can replace this skill with a newer version: then rebuild the list from the new version. The report (step 5) goes through the list item by item.
+Start every run with a to-do list, before any command that changes something. Use the session's task / to-do tool when there is one; otherwise write a numbered checklist in the reply. List every step below (0-6) with the sub-steps that apply on this device, the questions to ask included. Show the list, then work through it in order: mark each item in progress and done, add items that a check turns up (e.g. a skill conflict to merge), and do no work that is not on the list. Step 0 can replace this skill with a newer version: then rebuild the list from the new version. The self test (step 5) runs before the report; the report (step 6) goes through the list item by item.
 
 Ask every question with AskUserQuestion, never as plain text (see the global rules below). Ask the open questions up front: right after step 0, check what steps 1 and 3 need (5h stop value, CLAUDE.md override, skill update mode) and ask all questions that apply in one AskUserQuestion call, with the CLAUDE.md difference summary from step 1 written just before it. Then do the steps without asking again.
 
@@ -39,54 +39,54 @@ After Merge or Override, show the user the resulting diff.
 ```markdown
 # Global instructions
 
-- Always respond in English, regardless of the language the user writes in. Only switch to another language when the user explicitly asks for it. This covers every message to the user - replies, progress lines, status notes and AskUserQuestion questions/options - and holds even when the project files, course material, skills or notes are in another language (e.g. German slides): files follow the project's language, chat stays English. Code comments, commit messages and docs follow the project's own conventions (e.g. translated string resources stay in their language).
-- When the user asks about progress ("how far along are you", "status?", "wie weit bist du"), always answer with a percentage of the current task or plan that is done (best estimate), then one short line on what is done and what comes next.
-- During longer tasks (several steps, a plan, multi-file work), report progress on your own every few steps, without being asked: one short line with the percentage of the task done (best estimate), e.g. "25% done - X finished, next Y". Keep the same scale for the whole task so the numbers only go up.
-- Never assume. When a requirement, design choice or behaviour is unclear and the answer changes what you build, ask the user with the interview tool (AskUserQuestion) before acting - don't pick a default and only mention it afterwards. This matters most in bigger work (features, plans, multi-file changes): collect the open questions up front and ask them together. Only skip asking for facts you can check yourself (code, docs, tools).
-- Ask every open question with the interview tool (AskUserQuestion), never as plain text in a reply. This includes yes/no confirmations, "should I ...?" offers at the end of a reply, and choices between options or next steps. Put the needed context into each question, because the user may see only the question dialog. Plain text is for results and reports only.
-- "Next to-do" always starts with an interview. When the user says "let's continue with the next to-do", "pick next todo" or similar, never start an item on your own. First ask with AskUserQuestion which item to do next (offer the top open items of the to-do list, one short line each) and whether to commit the current changes first. Then interview about the picked item before building. Skip this only when the same session already settled it: earlier answers fixed exactly what comes next and in which order.
+- Always respond in English, whatever language user writes. Switch only when user explicitly asks. Covers every message to user - replies, progress lines, status notes, AskUserQuestion questions/options - also when project files, course material, skills or notes are in another language (e.g. German slides): files follow project's language, chat stays English. Code comments, commit messages, docs follow project's own conventions (e.g. translated string resources stay in their language).
+- User asks about progress ("how far along are you", "status?", "wie weit bist du"): answer with percentage of current task or plan done (best estimate), then one short line: what done, what next.
+- Longer tasks (several steps, plan, multi-file work): report progress unasked every few steps. One short line with percentage done (best estimate), e.g. "25% done - X finished, next Y". Same scale whole task, numbers only go up.
+- Never assume. Requirement, design choice or behaviour unclear and answer changes what you build: ask user with interview tool (AskUserQuestion) before acting - never pick default and mention it only afterwards. Matters most in bigger work (features, plans, multi-file changes): collect open questions up front, ask together. Skip asking only for facts you can check yourself (code, docs, tools).
+- Ask every open question with AskUserQuestion, never as plain text in reply. Includes yes/no confirmations, "should I ...?" offers at end of reply, choices between options or next steps. Put needed context into each question: user may see only question dialog. Plain text only for results and reports.
+- "Next to-do" always starts with interview. User says "let's continue with the next to-do", "pick next todo" or similar: never start item on your own. First ask with AskUserQuestion which item next (offer top open items of to-do list, one short line each) and whether to commit current changes first. Then interview about picked item before building. Skip only when same session already settled it: earlier answers fixed exactly what comes next and in which order.
 - Always use the `caveman` skill at level **ultra** for every reply, in every session, unless the user says "stop caveman" or "normal mode". This is very important to keep token use low. The caveman plugin default is set to ultra in `~/.config/caveman/config.json` (`{"defaultMode": "ultra"}`); a hook line saying "full" never lowers the level.
-- After a change with several small fixes or edits, end the last reply of that work with a small table of what was changed or fixed, one row per item (also in caveman mode). Skip the table for a single change.
+- After change with several small fixes or edits: end last reply of that work with small table of what changed or fixed, one row per item (also in caveman mode). Skip table for single change.
 
 ## Usage limits
-- The user may ask to stop or pause at a usage limit (e.g. "stop at 12% of the 5h limit", "don't use more than 20%"). Read the current values from the file the status line writes:
+- User may ask to stop or pause at usage limit (e.g. "stop at 12% of the 5h limit", "don't use more than 20%"). Read current values from file status line writes:
   `jq -r '"5h: \(.rate_limits.five_hour.used_percentage)% (resets \(.rate_limits.five_hour.resets_at)) week: \(.rate_limits.seven_day.used_percentage)%"' ~/.claude/state/rate_limits.json`
-  (`resets_at` is epoch seconds: `date -r <ts>` on macOS, `date -d @<ts>` on Linux). Check it before and during long work, especially before spawning subagents, and stop cleanly (commit/report state) before the cap is passed.
-- The file is only refreshed when the status line redraws, which happens after a response (about 3 seconds after it ends) - inside a running turn the value lags behind the real usage. Leave a margin, and a key can be missing (e.g. no `five_hour` right after a reset); never claim the usage cannot be read.
-- Percentages are of the current window; a new 5h window starts at `resets_at`, so a cap like "20% of the limit" applies to the window the work runs in.
-- Always keep <RESERVE>% of the 5h limit free for other use: even without a cap from the user, stop cleanly (commit/report state) once the 5h usage reaches <STOP>%, and say how to continue after `resets_at`. Never skip this stop on your own. When the user asks for a long-running task - work that runs overnight or unattended ("night work", "over night", "while I sleep", autonomous mode) or a big multi-step plan to implement autonomously - ask before starting whether the <STOP>% stop should be ignored for this work (the user may want as much done as possible before the weekly limit resets, because unused tokens are lost), and ignore it only if they say yes. A cap the user names always wins.
+  (`resets_at` = epoch seconds: `date -r <ts>` on macOS, `date -d @<ts>` on Linux). Check before and during long work, especially before spawning subagents. Stop cleanly (commit/report state) before cap passed.
+- File refreshes only on status line redraw, about 3 seconds after response ends - inside running turn value lags real usage. Leave margin. Key can be missing (e.g. no `five_hour` right after reset); never claim usage cannot be read.
+- Percentages are of current window. New 5h window starts at `resets_at`, so cap like "20% of the limit" applies to window work runs in.
+- Always keep <RESERVE>% of the 5h limit free for other use: even without cap from user, stop cleanly (commit/report state) once 5h usage reaches <STOP>%, say how to continue after `resets_at`. Never skip this stop on your own. User asks for long-running task - work that runs overnight or unattended ("night work", "over night", "while I sleep", autonomous mode) or big multi-step plan to implement autonomously: ask before starting whether <STOP>% stop should be ignored for this work (user may want as much done as possible before weekly limit resets, because unused tokens are lost); ignore only on yes. Cap user names always wins. A hook enforces the stop (`usage-cap-hook.sh`, see the claude-setup skill): at the stop it blocks every tool call. On a yes to ignoring it, lift it for the current 5h window with `bash ~/.claude/skills/claude-setup/usage-cap-hook.sh --allow-window`; never run it without that yes.
 
 ## Private data in requests
-- Never send the user's private data to an external service on your own: no email address, name, username, phone number, home address, location, account or device IDs, tokens or API keys in any request header (e.g. `User-Agent`, `From`, `Referer`), URL, query parameter or payload. This holds even when a site's policy asks automated clients to identify themselves or to give contact details.
-- When a request would need or could include such data, stop before sending it and interview the user with AskUserQuestion. Make it very clear what you are about to do: which data exactly, to which service and URL, in which field (header name, parameter, body), how often, and why. Always offer a neutral alternative (generic tool name, no contact data, library default) and recommend it unless the service really requires the data.
-- Send private data only after the user explicitly agrees for that service and that field. A yes for one service, field or session does not carry over to another.
-- Default for scripts and tools you write: a neutral `User-Agent` (tool name only or the library default), never one that carries personal contact data.
+- Never send user's private data to external service on your own: no email address, name, username, phone number, home address, location, account or device IDs, tokens or API keys in any request header (e.g. `User-Agent`, `From`, `Referer`), URL, query parameter or payload. Holds even when site's policy asks automated clients to identify themselves or give contact details.
+- Request would need or could include such data: stop before sending, interview user with AskUserQuestion. Make very clear: which data exactly, to which service and URL, in which field (header name, parameter, body), how often, why. Always offer neutral alternative (generic tool name, no contact data, library default); recommend it unless service really requires data.
+- Send private data only after user explicitly agrees for that service and that field. Yes for one service, field or session does not carry over to another.
+- Default for scripts and tools you write: neutral `User-Agent` (tool name only or library default), never one carrying personal contact data.
 
 ## Git
-- No Claude attribution in commits or pull requests (no `Co-Authored-By: Claude …` trailer, no "Generated with Claude Code" line). `claude-setup` turns it off with `"attribution": { "commit": "", "pr": "" }` in `~/.claude/settings.json`; this is the user's choice for every repo.
+- No Claude attribution in commits or pull requests (no `Co-Authored-By: Claude …` trailer, no "Generated with Claude Code" line). `claude-setup` turns it off with `"attribution": { "commit": "", "pr": "" }` in `~/.claude/settings.json`; user's choice for every repo.
 
 ## Client and server projects
-- Some projects come as a client repo plus a server repo (an app and its backend). An agent changes code only in its own repo; reading the other repo is fine.
-- When a change the user approved needs work in the other repo, hand it over. Run `ListAgents`: if a session of the other repo is live, send the request with `SendMessage`. If none is live or the message fails, add the request to the other repo's to-do file (the one its CLAUDE.md names, e.g. `Todo.md` or `plans/Todo.md`) with source and date. That to-do file is the only file an agent may write in the other repo.
-- Hand over only changes the user approved, never a guess of your own.
-- Describe what is needed, not how to build it: the behaviour, the user's decisions, who may do what, edge cases, compatibility with released versions, and the exact field names this side sends or reads. Leave the other side's structure (classes, services, storage, file layout) to the other agent: it researches its own code and decides with its own skills.
-- The receiving agent replies with the contract it built (endpoints, field names, changes to the proposed names), and the requester follows it. The rules work both ways: client to server and server to client.
-- A project's CLAUDE.md may name the peer repo, its to-do file or a stricter format.
+- Some projects = client repo plus server repo (app and its backend). Agent changes code only in own repo; reading other repo fine.
+- Change user approved needs work in other repo: hand it over. Run `ListAgents`: session of other repo live, send request with `SendMessage`. None live or message fails: add request to other repo's to-do file (one its CLAUDE.md names, e.g. `Todo.md` or `plans/Todo.md`) with source and date. That to-do file = only file agent may write in other repo.
+- Hand over only changes user approved, never own guess.
+- Describe what is needed, not how to build it: behaviour, user's decisions, who may do what, edge cases, compatibility with released versions, exact field names this side sends or reads. Leave other side's structure (classes, services, storage, file layout) to other agent: it researches own code, decides with own skills.
+- Receiving agent replies with contract it built (endpoints, field names, changes to proposed names); requester follows it. Rules work both ways: client to server and server to client.
+- Project's CLAUDE.md may name peer repo, its to-do file or stricter format.
 
 ## Builds
-- Compile tasks (e.g. Gradle `compile*` tasks) may be run freely to check changes, but only if the machine is not a laptop. Check first: macOS `pmset -g batt | grep -q InternalBattery` (match = laptop); Linux `ls /sys/class/power_supply/BAT*` (exists = laptop); Windows `Get-CimInstance Win32_Battery` (any result = laptop). On a laptop, and for every other build task (tests, assemble, run, install, full build, publish), only run it when the user explicitly asks. A project's CLAUDE.md may name the exact tasks.
+- Compile tasks (e.g. Gradle `compile*` tasks) may run freely to check changes, only if machine not laptop. Check first: macOS `pmset -g batt | grep -q InternalBattery` (match = laptop); Linux `ls /sys/class/power_supply/BAT*` (exists = laptop); Windows `Get-CimInstance Win32_Battery` (any result = laptop). On laptop, and for every other build task (tests, assemble, run, install, full build, publish), run only when user explicitly asks. Project's CLAUDE.md may name exact tasks.
 
 ## Starting at a specific time
-- When the user wants work to start at a specific time ("start at 14:40", "do this in the last 10 min of the 5h window"), schedule it with the session cron (`CronCreate`, one-shot, local time) carrying the full task as prompt - never by sleeping or polling. Tell the user the scheduled time and that the job only lives while this session stays open.
+- User wants work to start at specific time ("start at 14:40", "do this in the last 10 min of the 5h window"): schedule with session cron (`CronCreate`, one-shot, local time) carrying full task as prompt - never by sleeping or polling. Tell user scheduled time and that job only lives while this session stays open.
 
 ## Skills
-- Skills live in `~/.claude/skills/` and are synced between devices over the public GitHub repo `lerchenflo/claudeskills` (local clone `~/.claude/skills-repo`, grouped as `<group>/<skill>/`).
-- After creating or changing a skill, copy the updated skill folder to its group folder in `~/.claude/skills-repo` (new skill: pick a fitting group and add it to the skill list in the repo README), then `git pull --rebase`, commit and push.
-- Then run `bash ~/.claude/skills/claude-setup/local-only-skills.sh`. If it lists skills (local skills that are not in the repo yet), ask the user with AskUserQuestion (multiSelect) which of them to upload too. Upload the chosen ones the same way; write the names the user keeps local into `~/.claude/state/skills-local-only` (one per line) so they are not offered again.
-- Never overwrite or delete an existing skill in `~/.claude/skills/` with a repo version without asking the user. Merging (keep every rule from both) is fine; replacing is not.
-- Write skills in English by default (SKILL.md, scripts, code comments, templates, file names), even when the user writes in another language. Only content that must be in another language stays in it (quoted exam examples, UI labels of a course in that language); say so in the skill.
-- Project-specific skills (named after or only useful for one project) stay in that project's `.claude/skills/`, never in `~/.claude/skills/` or the repo.
-- A SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) checks GitHub for new skill versions; its mode (review, auto or off) is set by `claude-setup`. Review mode: when it reports available updates, tell the user which skills changed with a short summary of each diff (`git -C ~/.claude/skills-repo diff <installed>..HEAD -- <group>/<skill>`), and install only after the user agrees (`bash ~/.claude/skills/claude-setup/update-skills.sh --force --mode auto`). Auto mode: tell the user which skills were installed or updated. If it reports a conflict (the skill was changed both here and on another device), do not overwrite blindly: merge both versions (keep every rule from both, newest wording wins on conflicts), write the merged result to both places, push, and tell the user what was merged.
+- Skills live in `~/.claude/skills/`, synced between devices over public GitHub repo `lerchenflo/claudeskills` (local clone `~/.claude/skills-repo`, grouped as `<group>/<skill>/`).
+- After creating or changing skill: copy updated skill folder to its group folder in `~/.claude/skills-repo` (new skill: pick fitting group, add to skill list in repo README), then `git pull --rebase`, commit, push.
+- Then run `bash ~/.claude/skills/claude-setup/local-only-skills.sh`. Lists skills (local, not in repo yet): ask user with AskUserQuestion (multiSelect) which to upload too. Upload chosen ones same way; write names user keeps local into `~/.claude/state/skills-local-only` (one per line) so not offered again.
+- Never overwrite or delete existing skill in `~/.claude/skills/` with repo version without asking. Merging (keep every rule from both) fine; replacing not.
+- Write skills in English by default (SKILL.md, scripts, code comments, templates, file names), even when user writes another language. Only content that must be in another language stays in it (quoted exam examples, UI labels of course in that language); say so in skill.
+- Project-specific skills (named after or only useful for one project) stay in that project's `.claude/skills/`, never in `~/.claude/skills/` or repo.
+- SessionStart hook (`~/.claude/skills/claude-setup/update-skills.sh`) checks GitHub for new skill versions; mode (review, auto or off) set by `claude-setup`. Review mode: hook reports available updates, tell user which skills changed with short summary of each diff (`git -C ~/.claude/skills-repo diff <installed>..HEAD -- <group>/<skill>`), install only after user agrees (`bash ~/.claude/skills/claude-setup/update-skills.sh --force --mode auto`). Auto mode: tell user which skills installed or updated. Hook reports conflict (skill changed both here and on another device): never overwrite blindly - merge both versions (keep every rule from both, newest wording wins on conflicts), write merged result to both places, push, tell user what merged.
 ```
 
 ## 2. Status line
@@ -116,8 +116,6 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 `attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Settings are not synced via GitHub - this section is their only source.
 
 The setup installs no plugins: `caveman` comes as a skill from the repo. Older versions of this setup enabled the plugins `caveman@caveman` and `claude-mem@thedotmack` (with their marketplaces). Leave them as they are unless the user asks, but name them in the report; for `claude-mem`, also say that its worker needs the Bun runtime and records nothing without it (check `~/.claude-mem/logs/` for "Bun runtime not found").
-
-Caveman level: always write `~/.config/caveman/config.json` with `{"defaultMode": "ultra"}` (merge the key into an existing file, keep its other keys). The `caveman@caveman` plugin hooks read this file and otherwise push level "full" into every prompt. Ultra is the user's level for every session to keep token use low (user, 2026-11-20).
 
 ### Skill update mode (SessionStart hook)
 
@@ -152,6 +150,29 @@ Append the entry to any existing `SessionStart` list and never add it twice; an 
 
 What the hook does: at most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in seconds) it fetches the repo into `~/.claude/skills-repo` and compares it with the last installed commit. Review mode prints the new, changed and removed skills and installs nothing; the user's global CLAUDE.md tells Claude to show the diffs and install only after the user agrees. Auto mode installs new and changed skills into `~/.claude/skills/`. In both modes it never overwrites a local copy that has its own changes or a local skill that was never synced (it reports them as conflicts), and a skill deleted or renamed in the repo is removed locally only while the local copy still equals the last synced version. The hook prints facts only, never instructions to Claude. In review mode `update-skills.sh` itself changes only when the user installs an update, so no unreviewed code runs. Offline it stays silent. Needs `git`, `bash`, `diff` and `tar`; on Windows these come with Git for Windows, whose Git Bash runs the hook (`"shell": "bash"`).
 
+### Usage cap hook (PreToolUse + UserPromptSubmit)
+
+The 5h stop from step 1 is enforced by a hook, not only by text: sessions drift past a text rule in long work (user, 2026-11-20). Merge both entries into `~/.claude/settings.json` (append to existing lists, never twice; replace an older entry that runs `usage-cap-hook.sh`):
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "*", "hooks": [ { "type": "command", "shell": "bash", "command": "bash ~/.claude/skills/claude-setup/usage-cap-hook.sh pretool", "timeout": 10 } ] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "shell": "bash", "command": "bash ~/.claude/skills/claude-setup/usage-cap-hook.sh prompt", "timeout": 10 } ] }
+    ]
+  }
+}
+```
+
+What `usage-cap-hook.sh` does: reads `~/.claude/state/rate_limits.json` (written by the status line, step 2). The stop value comes from the global CLAUDE.md rule "Always keep <RESERVE>% of the 5h limit free" (stop = 100 - reserve; the "Never stop on your own" variant turns the hook off; `CLAUDE_USAGE_STOP` overrides). At or above the stop it denies every tool call with a message to stop cleanly and report, and warns on every prompt. A prompt that says "ignore the limit" (or cap / stop / 90%) lifts the stop for the current 5h window; after a yes in AskUserQuestion Claude runs `bash ~/.claude/skills/claude-setup/usage-cap-hook.sh --allow-window` (the only command the hook lets through). The lift is stored as the window's `resets_at` in `~/.claude/state/usage-cap-override` and ends with the window. Limit: the status line refreshes only after a reply ends, so inside one long turn the value lags. Needs `jq` and `awk`.
+
+### Caveman level
+
+Caveman runs at level **ultra** in every session (user, 2026-11-20). If the plugin `caveman@caveman` is enabled, always write `~/.config/caveman/config.json` with `{"defaultMode": "ultra"}` (merge the key into an existing file, keep its other keys). Why: the plugin's hooks re-arm caveman at their default level whenever a prompt says something like "use caveman"; without this file that default is "full", so a session drops from ultra back to full. The level is stored per session in `~/.claude/.caveman-sessions/<session id>.mode`.
+
 ## 4. Skills from GitHub
 
 1. Make sure `~/.claude/skills-repo` is up to date (step 0). Pushing needs the user's GitHub login on this device (`gh auth login` or an SSH key); if a push fails, tell the user how to log in.
@@ -164,6 +185,23 @@ What the hook does: at most every 6 hours (`CLAUDE_SKILLS_CHECK_INTERVAL`, in se
 
 Skip `~/.claude/skills/synced/` (Anthropic's built-in skills, managed by the app) everywhere and never put a `settings.json` into a skills folder.
 
-## 5. Report
+## 5. Self test
 
-Go through the to-do list item by item: what changed on this device (5h stop value, CLAUDE.md choice - merged, overridden or kept - and its diff, status line installed or updated, settings merged, plugins from older setups, skill update mode - review / auto / off, new or unchanged - skills copied/merged/pushed) and anything skipped. End with the skills version now on this device (`git -C ~/.claude/skills-repo log -1 --format='%h %cs %s'`) and whether it matches the latest commit on GitHub.
+Run every check, and fix or report each failure before the report. Never leave a test value behind: back up `~/.claude/state/rate_limits.json` first and restore it at the end, and delete `~/.claude/state/usage-cap-override` before and after.
+
+1. Files: `~/.claude/CLAUDE.md`, `~/.claude/statusline-command.sh`, `~/.claude/state/rate_limits.json` (exists after the first status line redraw) and `~/.config/caveman/config.json` with `defaultMode` `ultra` (when the caveman plugin is enabled).
+2. `jq . ~/.claude/settings.json` parses, and `hooks` has exactly one entry each for `update-skills.sh` (unless updates are off) and `usage-cap-hook.sh pretool` / `prompt`.
+3. Status line: `echo '{}' | bash ~/.claude/statusline-command.sh` prints a line and does not fail.
+4. Usage cap hook, with fake values written into `rate_limits.json` (`resets_at` one hour ahead unless stated):
+   - 50 %: `echo '{"tool_input":{"command":"ls"}}' | bash ~/.claude/skills/claude-setup/usage-cap-hook.sh pretool` prints nothing (allowed);
+   - stop value + 2: same call prints `permissionDecision` `deny`; `echo '{"prompt":"go on"}' | ... prompt` prints a `UserPromptSubmit` context;
+   - stop value + 2 with `--allow-window` in the command: allowed;
+   - stop value + 5 with `resets_at` in the past: allowed (stale window);
+   - stop value + 2, then `echo '{"prompt":"ignore the limit"}' | ... prompt`: the next pretool call is allowed, and `--status` says override on; with `resets_at` five hours later (next window) the call is denied again.
+   - `bash ~/.claude/skills/claude-setup/usage-cap-hook.sh --status` after the restore shows the real usage and the stop value from CLAUDE.md.
+5. Caveman (plugin enabled): find `caveman-mode-tracker.js` under `~/.claude/plugins/cache/caveman/`, run `echo '{"prompt":"use caveman","session_id":"selftest-0000"}' | node <path>` and check the output names level ultra; then delete `~/.claude/.caveman-sessions/selftest-0000.mode`.
+6. Skills: `git -C ~/.claude/skills-repo status --short` is clean, and `~/.claude/state/skills-installed-commit` matches the repo HEAD after step 4.
+
+## 6. Report
+
+Include the self test result (each check passed or what failed). Go through the to-do list item by item: what changed on this device (5h stop value, CLAUDE.md choice - merged, overridden or kept - and its diff, status line installed or updated, settings merged, plugins from older setups, skill update mode - review / auto / off, new or unchanged - skills copied/merged/pushed) and anything skipped. End with the skills version now on this device (`git -C ~/.claude/skills-repo log -1 --format='%h %cs %s'`) and whether it matches the latest commit on GitHub.
