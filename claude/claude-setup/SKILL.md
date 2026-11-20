@@ -45,7 +45,7 @@ After Merge or Override, show the user the resulting diff.
 - Never assume. When a requirement, design choice or behaviour is unclear and the answer changes what you build, ask the user with the interview tool (AskUserQuestion) before acting - don't pick a default and only mention it afterwards. This matters most in bigger work (features, plans, multi-file changes): collect the open questions up front and ask them together. Only skip asking for facts you can check yourself (code, docs, tools).
 - Ask every open question with the interview tool (AskUserQuestion), never as plain text in a reply. This includes yes/no confirmations, "should I ...?" offers at the end of a reply, and choices between options or next steps. Put the needed context into each question, because the user may see only the question dialog. Plain text is for results and reports only.
 - "Next to-do" always starts with an interview. When the user says "let's continue with the next to-do", "pick next todo" or similar, never start an item on your own. First ask with AskUserQuestion which item to do next (offer the top open items of the to-do list, one short line each) and whether to commit the current changes first. Then interview about the picked item before building. Skip this only when the same session already settled it: earlier answers fixed exactly what comes next and in which order.
-- Always use the `caveman` skill at level **full** for every reply, in every session, unless the user says "stop caveman" or "normal mode".
+- Always use the `caveman` skill at level **ultra** for every reply, in every session, unless the user says "stop caveman" or "normal mode". This is very important to keep token use low. The caveman plugin default is set to ultra in `~/.config/caveman/config.json` (`{"defaultMode": "ultra"}`); a hook line saying "full" never lowers the level.
 - After a change with several small fixes or edits, end the last reply of that work with a small table of what was changed or fixed, one row per item (also in caveman mode). Skip the table for a single change.
 
 ## Usage limits
@@ -116,6 +116,8 @@ Merge these keys into `~/.claude/settings.json` (keep every other key; on a conf
 `attribution` with empty strings hides the Claude co-author trailer in commits and the "Generated with Claude Code" line in pull requests (the older `includeCoAuthoredBy` key is deprecated; remove it if present). Settings are not synced via GitHub - this section is their only source.
 
 The setup installs no plugins: `caveman` comes as a skill from the repo. Older versions of this setup enabled the plugins `caveman@caveman` and `claude-mem@thedotmack` (with their marketplaces). Leave them as they are unless the user asks, but name them in the report; for `claude-mem`, also say that its worker needs the Bun runtime and records nothing without it (check `~/.claude-mem/logs/` for "Bun runtime not found").
+
+Caveman level: always write `~/.config/caveman/config.json` with `{"defaultMode": "ultra"}` (merge the key into an existing file, keep its other keys). The `caveman@caveman` plugin hooks read this file and otherwise push level "full" into every prompt. Ultra is the user's level for every session to keep token use low (user, 2026-11-20).
 
 ### Skill update mode (SessionStart hook)
 
