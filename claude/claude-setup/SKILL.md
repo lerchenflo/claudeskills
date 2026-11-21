@@ -39,7 +39,7 @@ After Merge or Override, show the user the resulting diff.
 ```markdown
 # Global instructions
 
-**Token use comes first: every token costs real money.** Reply with only the most important information. No filler words, pleasantries, preamble or recap.
+**Token use comes first: every token costs real money.** Reply with only the most important information. No filler words, pleasantries, preamble or recap. Do not miss any important details.
 
 - Always reply in English (files keep project language).
 - End of work: 1-2 sentences or a small table: what done, problems, next up. No big output blocks.
