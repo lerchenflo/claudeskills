@@ -4,7 +4,7 @@ Claude Code skills, shared publicly. The owner uses this repo to keep the skills
 (desktop and laptop) in sync, and anyone is welcome to use them.
 
 > **Disclaimer: these are my personal preferences.** The skills, and above all `claude-setup`,
-> reflect how I (lerchenflo) like to work: English replies, the caveman reply style, `opus` with
+> reflect how I (lerchenflo) like to work: short token-saving English replies, `opus` with
 > `xhigh` effort, no Claude attribution in commits, usage-limit stops, laptop build rules. They are
 > shared as they are, without warranty. Read a skill before you install it, and adapt or skip
 > whatever does not fit you.
@@ -70,7 +70,6 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 | Skill | What it does |
 |-------|--------------|
 | `claude-setup` | Sets up Claude Code on a device with the owner's preferences: global `CLAUDE.md`, status line (context, 5h and weekly limits), model, effort and skill sync with GitHub. Works from a to-do list, asks before it overrides an existing global `CLAUDE.md`, and lets you pick the skill update mode (review first, auto-install or off). Run it first on every new device. |
-| `caveman` | Compressed reply style that cuts output tokens but keeps full technical accuracy. Levels lite, full, ultra and wenyan variants. |
 | `skill-creator` | Creates and improves skills, runs evals and benchmarks, and tunes skill descriptions so they trigger reliably. |
 
 ### general
@@ -166,7 +165,6 @@ keep their own license, which lies in their folder:
 
 - `android/*`: Google's official Android skills ([android/skills](https://github.com/android/skills)), Apache License 2.0 (`LICENSE.txt`).
 - `claude/skill-creator`: Anthropic (`LICENSE.txt`).
-- `claude/caveman`: Julius Brussee ([caveman](https://github.com/JuliusBrussee/caveman)), Apache License 2.0 (`LICENSE`, `NOTICE`; older parts MIT, `LICENSE-MIT`).
 - `kmp-architecture/*`: based on skills by Philipp Lackner; his terms apply.
 
 ## Credits
