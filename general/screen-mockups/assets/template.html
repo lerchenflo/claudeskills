@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--
+  Screen mockups template. One row only: "Now" first, then 3-4 variants.
+  Replace every {{...}} placeholder. Keep the row rules (.row) as they are.
+-->
+<html lang="{{ui language, e.g. de}}">
+<head>
+<meta charset="utf-8">
+<title>{{Screen}} – mockups</title>
+<style>
+  :root {
+    /* App theme, copied from the project's theme files (not invented) */
+    --bg: {{background}};
+    --on-bg: {{onBackground}};
+    --surface: {{surface}};
+    --surface-high: {{surfaceContainerHigh}};
+    --on-surface: {{onSurface}};
+    --on-variant: {{onSurfaceVariant}};
+    --outline: {{outline}};
+    --outline-variant: {{outlineVariant}};
+    --primary: {{primary}};
+    --on-primary: {{onPrimary}};
+    --primary-container: {{primaryContainer}};
+    --on-primary-container: {{onPrimaryContainer}};
+    /* Frame = device size in CSS px (phone dp/pt width; desktop/web scaled down) */
+    --frame-w: {{e.g. 380px}};
+    --frame-h: {{e.g. 800px}};
+    --font: {{e.g. Roboto, "SF Pro Text", system-ui, sans-serif}};
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e8eae7; color: #1b1b1b; font-family: system-ui, sans-serif; }
+  header { padding: 24px 32px 12px; }
+  header h1 { margin: 0 0 6px; font-size: 22px; }
+  header p { margin: 0; color: #444; max-width: 1100px; line-height: 1.45; }
+
+  /* THE ROW: one line, never wraps, scrolls sideways when the window is narrow */
+  .row { display: flex; flex-wrap: nowrap; gap: 28px; overflow-x: auto; padding: 16px 32px 40px;
+         align-items: flex-start; }
+  .item { flex: 0 0 var(--frame-w); }
+  .item h2 { margin: 0 0 4px; font-size: 15px; }
+  .item .why { margin: 0 0 10px; font-size: 12.5px; color: #555; line-height: 1.4; min-height: 52px; }
+
+  .frame { width: var(--frame-w); height: var(--frame-h); overflow: hidden; position: relative;
+           background: var(--bg); color: var(--on-bg); font-family: var(--font);
+           border: 6px solid #1a1a1a; border-radius: 30px; box-shadow: 0 10px 28px rgba(0,0,0,.25); }
+  .frame.desktop { border-radius: 10px; border-width: 4px; }
+  .frame.shot img { width: 100%; display: block; }
+  .frame .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 64px;
+                 background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+
+  /* Optional state toggle (empty / filled / dark ...): switches ALL frames, stays one row */
+  .toggle { margin-top: 10px; display: flex; gap: 8px; }
+  .toggle button { border: 1px solid #999; background: #fff; border-radius: 16px; padding: 4px 12px; cursor: pointer; }
+  body.state-b .only-a, body:not(.state-b) .only-b { display: none; }
+
+  /* ---- shared building blocks of the platform (top bar, cards, buttons ...) go here ---- */
+  {{component styles}}
+</style>
+</head>
+<body>
+<header>
+  <h1>{{Screen}}: {{what is being redesigned}}</h1>
+  <p>{{One or two lines: what bothers the user today, what all variants change, where the screenshot comes from.}}</p>
+  <!-- Remove the toggle when there is only one state -->
+  <div class="toggle">
+    <button onclick="document.body.classList.remove('state-b')">{{State A, e.g. filled}}</button>
+    <button onclick="document.body.classList.add('state-b')">{{State B, e.g. empty}}</button>
+  </div>
+</header>
+
+<div class="row">
+
+  <div class="item">
+    <h2>Now</h2>
+    <p class="why">{{What is weak about the current screen, in one or two lines.}}</p>
+    <div class="frame shot"><img src="now.png" alt="current screen"></div>
+  </div>
+
+  <div class="item">
+    <h2>A · {{idea in 2-4 words}}</h2>
+    <p class="why">{{Why it helps.}}</p>
+    <div class="frame">
+      {{variant A markup, same part of the screen as the screenshot}}
+      <div class="fade"></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <h2>B · {{different idea}}</h2>
+    <p class="why">{{Why it helps.}}</p>
+    <div class="frame">
+      {{variant B markup}}
+      <div class="fade"></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <h2>C · {{different idea}}</h2>
+    <p class="why">{{Why it helps.}}</p>
+    <div class="frame">
+      {{variant C markup}}
+      <div class="fade"></div>
+    </div>
+  </div>
+
+  <!-- Optional fourth variant D, same structure -->
+
+</div>
+</body>
+</html>
