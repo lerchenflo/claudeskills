@@ -81,6 +81,7 @@ Skills are grouped into folders here, but Claude Code expects them flat. Copy a 
 | `security-review` | Systematic security code review (injection, XSS, authentication, authorization, cryptography) with confidence-based findings. |
 | `test-driven-development` | Test-first workflow for features and bug fixes: write a failing test, then the code. |
 | `vori-translator` | Translates and reviews Vorarlbergerisch (Vori dialect) string resources (`values-de-rAT/strings.xml`, website texts): fills missing keys, fixes typos, Standard-German leftovers and broken placeholders. Project-specific names and jokes go into a project add-on skill (`<project>-vori`). |
+| `product-finder` | Finds a product as cheaply as possible, used or new: asks for the exact product and max price, searches willhaben, Kleinanzeigen, ricardo, tutti and eBay in parallel tabs of your own browser (Safari, via AppleScript; Chrome can be added), filters by spec, price and distance, checks the best listings and writes an HTML report with links to the Desktop. Stops at CAPTCHAs, never logs in or buys. |
 
 ### kmp-architecture - Kotlin Multiplatform / Compose app architecture
 
