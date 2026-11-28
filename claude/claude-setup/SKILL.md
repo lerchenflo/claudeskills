@@ -43,7 +43,7 @@ After Merge or Override, show the user the resulting diff.
 
 - Always reply in English (files keep project language).
 - End of work: 1-2 sentences or a small table: what done, problems, next up. No big output blocks.
-- Never ask questions in reply text. Every question, yes/no confirmation, "should I ...?" offer or choice goes through AskUserQuestion, with needed context inside the question.
+- Never ask questions in reply text. Every question, yes/no confirmation, "should I ...?" offer, choice or wait for an OK (diff review, commit, next step) goes through AskUserQuestion at the end of the reply, with needed context inside the question. Never end a reply with "once you OK ..." or a question in text.
 - Never assume: unclear requirement that changes the result: ask before acting. Bigger work: collect questions up front, ask together. Facts you can check (code, docs, tools): check, don't ask.
 - Start of request: write its steps to `todo.md` in session scratchpad (one line each), prompts arriving mid-run under "Next up", tick done items.
 - Progress (asked, or every few steps of long work): one line "NN% done - X done, next Y". Numbers only go up.
