@@ -48,6 +48,7 @@ After Merge or Override, show the user the resulting diff.
 - Start of request: write its steps to `todo.md` in session scratchpad (one line each), prompts arriving mid-run under "Next up", tick done items.
 - Progress (asked, or every few steps of long work): one line "NN% done - X done, next Y". Numbers only go up.
 - "Next to-do": first ask which item (top open items) and whether to commit first, then interview about it. Skip if session already settled it.
+- Code changes in small steps: max 5 changed files per step, compile/check, then stop for user's diff review (user may edit); commit only on user's OK, then next step. Big multi-file changes in one go only on night shift or while user is away (user says so, or unattended run).
 
 ## Usage limits
 - Read: `jq -r '"5h: \(.rate_limits.five_hour.used_percentage)% (resets \(.rate_limits.five_hour.resets_at)) week: \(.rate_limits.seven_day.used_percentage)%"' ~/.claude/state/rate_limits.json` (`resets_at` epoch: `date -r` macOS, `date -d @` Linux). Refreshes ~3 s after a reply ends, lags inside a turn: keep margin. Missing key (e.g. after reset) is normal, never say unreadable.
