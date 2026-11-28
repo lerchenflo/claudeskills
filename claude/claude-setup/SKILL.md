@@ -46,7 +46,7 @@ After Merge or Override, show the user the resulting diff.
 - Never ask questions in reply text. Every question, yes/no confirmation, "should I ...?" offer, choice or wait for an OK (diff review, commit, next step) goes through AskUserQuestion at the end of the reply, with needed context inside the question. Never end a reply with "once you OK ..." or a question in text.
 - Never assume: unclear requirement that changes the result: ask before acting. Bigger work: collect questions up front, ask together. Facts you can check (code, docs, tools): check, don't ask.
 - Start of request: write its steps to `todo.md` in session scratchpad (one line each), prompts arriving mid-run under "Next up", tick done items.
-- Progress (asked, or every few steps of long work): one line "NN% done - X done, next Y". Numbers only go up.
+- Progress (asked, every few steps of long work, and at every step stop for review): one line "Step NN% · overall NN% - X done, next Y" (current step and whole task). Numbers only go up.
 - "Next to-do": first ask which item (top open items) and whether to commit first, then interview about it. Skip if session already settled it.
 - Code changes in small steps: max 5 changed files per step, compile/check, then stop for user's diff review (user may edit); commit only on user's OK, then next step. Big multi-file changes in one go only on night shift or while user is away (user says so, or unattended run).
 
